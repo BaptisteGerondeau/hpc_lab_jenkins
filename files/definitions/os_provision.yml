@@ -30,6 +30,10 @@
                                  - job-build
                                  - job-read
          parameters:
+                 - string:
+                         name: scripts_branch
+                         default: 'master'
+                         description: 'The branch of the job logic to use'
                  - choice:
                          name: machine_type
                          choices:
@@ -59,62 +63,16 @@
                         #!/bin/bash
                         set -ex
 
-                        # Chose default OS
-                        if [ "${os_type}" == "default" ]; then
-                          if [ "${job_type}" == "bench" ]; then
-                            os_type=debian
-                          elif [ "${job_type}" == "ohpc" ]; then
-                            os_type=centos
-                            if [ "${machine_type}" == "qdc" ]; then
-                                os_type=centos-upstream
-                            fi
-                          else
-                            echo "Not Implemented Yet!!!!"
-                          fi
-                        fi
+                        if [ -d "hpc_lab_setup" ]; then
+                                rm -rf hpc_lab_setup
+                        fi 
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        # Chose known good kernel/initrd/cmdline
-                        if [ "${os_type}" == "debian" ]; then
-                          preseed_type="preseed"
-                          kernel_desc="Debian ERP 18.06"
-                          initrd_desc="Debian ERP 18.06"
-                          preseed_name="Debian"
-                          kernel_opts=
-                        elif [ "${os_type}" == "centos" ]; then
-                          preseed_type="kickstart"
-                          kernel_desc="CentOS ERP 18.06"
-                          initrd_desc="CentOS ERP 18.06"
-                          preseed_name="CentOS"
-                          kernel_opts="ip=dhcp text inst.stage2=http://10.40.0.13/releases.linaro.org/reference-platform/enterprise/18.06/centos-installer/ inst.repo=http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/ inst.ks=file:/ks.cfg"
-                        elif [ "${os_type}" == "centos-upstream" ]; then
-                          preseed_type="kickstart"
-                          kernel_desc="CentOS 7.5"
-                          initrd_desc="CentOS 7.5"
-                          preseed_name="CentOS Upstream"
-                          kernel_opts="ip=dhcp text inst.stage2=http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/ inst.repo=http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/ inst.ks=file:/ks.cfg"
-                        else
-                          echo "Not Implemented Yet!!!!"
-                        fi
+                        bash hpc_lab_setup/files/scripts/os_provision.sh "${WORKSPACE}" "${scripts_branch}" "${machine_type}" "${job_type}" "${os_type}" -v
 
-                        # Special options for special machines
-                        if [ "${machine_type}" == "d03" ]; then
-                          kernel_opts="$kernel_opts modprobe.blacklist=hibmc_drm"
-                        fi
-
-                        # Build trigger machine_provision job
-                        cat << EOF > machine_provision
-                        os_type=${os_type}
-                        machine_type=${machine_type}
-                        job_type=${job_type}
-                        kernel_desc=${kernel_desc}
-                        initrd_desc=${initrd_desc}
-                        preseed_name=${preseed_name}
-                        preseed_type=${preseed_type}
-                        kernel_opts=${kernel_opts}
-                        kernel_path=
-                        initrd_path=
-                        preseed_path=
-                        EOF
+                        if [ ! -f machine_provision ]; then
+                                exit 1
+                        fi 
 
                  - conditional-step:
                          condition-kind: file-exists

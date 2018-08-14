@@ -10,12 +10,12 @@
           group: root
           mode: u=rx,g=rx,o=rwx
   with_items:
-          - "files/provisioning.py"
-          - "files/tarball_cacher.py"
+          - "files/scripts/provisioning.py"
+          - "files/scripts/tarball_cacher.py"
 
 - name: Copy yaml job definition(s)
   copy:
-      src: "files/{{ item }}.yml"
+      src: "files/definitions/{{ item }}.yml"
       dest: "/var/lib/jenkins/scripts/"
   with_items:
           - provisioning_job

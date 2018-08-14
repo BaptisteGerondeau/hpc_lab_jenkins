@@ -40,6 +40,10 @@
                          ignore-offline-nodes: true
                          description: 'Node with which to run the benchmark on the machine'
                  - string:
+                         name: scripts_branch
+                         default: 'master'
+                         description: 'The branch of the job logic to use'
+                 - choice:
                          name: branch
                          default: 'master'
                          description: 'The benchmark_harness branch to use'
@@ -86,44 +90,8 @@
                  - shell: |
                         #!/bin/bash
                         set -ex
-                        cd ${WORKSPACE}
-                        eval `ssh-agent`
-                        ssh-add
 
-                        case ${node} in
-                        d03*)
-                            vendor='huawei'
-                            node_type=d03
-                            machine_type=aarch64
-                            ;;
-                        d05*)
-                            vendor='huawei'
-                            node_type=d05
-                            machine_type=aarch64
-                            ;;
-                        qdc*)
-                            vendor='qualcomm'
-                            node_type=qdc
-                            machine_type=aarch64
-                            ;;
-                        tx*)
-                            vendor='cavium'
-                            node_type=tx2
-                            machine_type=aarch64
-                            ;;
-                        x86_64*)
-                            vendor='intel'
-                            node_type=x86
-                            machine_type=x86_64
-                            ;;
-                        esac
-
-                        if [[ ${compiler} = *"http://"* ]] || [[ ${compiler} = *"ftp://"* ]]; then
-                                ${JENKINS_HOME}/scripts/tarball_cacher.py ${compiler} /tmp/ --upload=sftp://10.40.0.13/toolchains
-                                file=$(basename ${compiler})
-                                compiler="http://10.40.0.13/toolchains/${file}"
-                        fi
-
+<<<<<<< HEAD:files/benchmark_job.yml
                         cat << EOF > benchmark_job.yml
                         mr_provisioner_url: http://10.40.0.11:5000
                         mr_provisioner_token: $(cat "/home/${NODE_NAME}/mrp_token")
@@ -143,11 +111,11 @@
                         run_flags: ${run_flags}
                         harness_options: ${harness_options}
                         EOF
+=======
+                        if [ -d "hpc_lab_setup" ]; then
+                                rm -rf hpc_lab_setup
+                        fi 
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
+>>>>>>> Decoupled and added command line 'parsing':files/definitions/benchmark_job.yml
 
-                        if [ -d ansible-deploy-benchmarks ]; then
-                            rm -rf ansible-deploy-benchmarks
-                        fi
-                        git clone -b ${branch} https://github.com/Linaro/ansible-deploy-benchmarks.git
-                        cd ansible-deploy-benchmarks
-                        ansible-playbook deploy_benchmarks.yml --extra-vars="@../benchmark_job.yml"
-                        ssh-agent -k 
+                        bash hpc_lab_setup/files/scripts/benchmark_job.sh "${WORKSPACE}" "${node}" "${compiler}" "${JENKINS_HOME}" "${BUILD_NUMBER}" "${branch}" "${benchmark}" "${compiler_flags}" "${link_flags}" "${benchmark_options}" "${benchmark_build_deps}" "${benchmark_run_deps}" -v
