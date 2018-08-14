@@ -30,6 +30,15 @@
                                  - job-build
                                  - job-read
          parameters:
+                 - choice:
+                         name: joblogic_branch
+                         choices:
+                                 - master
+                                 - dev
+                                 - bger
+                                 - rengolin
+                         default: 'master'
+                         description: 'The branch of the job logic to use'
                  - string:
                          name: machine_type
                          default: ''
@@ -83,42 +92,16 @@
                         #!/bin/bash
                         set -ex
 
-                        # Defaults
-                        if [[ ${machine_list} == '' ]]; then
-                                machine_name="${machine_type}${job_type}"
-                        else
-                                machine_list="$( echo "$machine_list"| tr -d '[:space:]')"
-                                machine_name=${machine_list}
-                        fi
-                        machine_arch=AArch64
-                        machine_subarch=Grub
+                        if [ -d "hpc_lab_setup" ]; then
+                                rm -rf hpc_lab_setup
+                        fi 
+                        git clone -b ${joblogic_branch} https://github.com/Linaro/hpc_lab_setup.git
+                        
+                        source hpc_lab_setup/files/scripts/machine_provision.sh
 
-                        # Special cases
-                        if [ "${machine_type}" == "d03" ]; then
-                            kernel_opts="${kernel_opts} earlycon console=ttyS0,115200"
-                        else
-                            kernel_opts="${kernel_opts} earlycon console=ttyAMA0,115200"
+                        if [ ! -f mrp_provision ]; then
+                                exit 1
                         fi
-
-                        if [ "${machine_type}" == "qdc" ]; then
-                            machine_subarch=GrubWithOptionEfiboot
-                        fi
-
-                        # Build trigger file
-                        cat << EOF > mrp_provision
-                        node="${machine_type}${job_type}"
-                        machine_name=${machine_name}
-                        machine_arch=${machine_arch}
-                        machine_subarch=${machine_subarch}
-                        kernel_opts=${kernel_opts}
-                        kernel_desc=${kernel_desc}
-                        initrd_desc=${initrd_desc}
-                        preseed_name=${preseed_name}
-                        preseed_type=${preseed_type}
-                        kernel_path=${kernel_path}
-                        initrd_path=${initrd_path}
-                        preseed_path=${preseed_path}
-                        EOF
 
                  - conditional-step:
                          condition-kind: file-exists
