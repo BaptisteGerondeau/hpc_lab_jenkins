@@ -39,13 +39,8 @@
                          allowed-multiselect: true
                          ignore-offline-nodes: true
                          description: 'Node with which to run the benchmark on the machine'
-                 - choice:
-                         name: joblogic_branch
-                         choices:
-                                 - master
-                                 - dev
-                                 - bger
-                                 - rengolin
+                 - string:
+                         name: scripts_branch
                          default: 'master'
                          description: 'The branch of the job logic to use'
                  - choice:
@@ -95,6 +90,6 @@
                         if [ -d "hpc_lab_setup" ]; then
                                 rm -rf hpc_lab_setup
                         fi 
-                        git clone -b ${joblogic_branch} https://github.com/Linaro/hpc_lab_setup.git
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        source hpc_lab_setup/files/scripts/benchmark_job.sh
+                        bash hpc_lab_setup/files/scripts/benchmark_job.sh ${WORKSPACE} ${node} ${compiler} ${JENKINS_HOME} ${BUILD_NUMBER} ${branch} ${benchmark} ${compiler_flags} ${link_flags} ${benchmark_options} ${benchmark_build_deps} ${benchmark_run_deps} -v

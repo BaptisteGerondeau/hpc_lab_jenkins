@@ -37,13 +37,8 @@
                          allowed-multiselect: true
                          ignore-offline-nodes: true
                          description: 'Node on which to execute this job'
-                 - choice:
-                         name: joblogic_branch
-                         choices:
-                                 - master
-                                 - dev
-                                 - bger
-                                 - rengolin
+                 - string:
+                         name: scripts_branch
                          default: 'master'
                          description: 'The branch of the job logic to use'
                  - choice:
@@ -69,6 +64,6 @@
                         if [ -d "hpc_lab_setup" ]; then
                                 rm -rf hpc_lab_setup
                         fi 
-                        git clone -b ${joblogic_branch} https://github.com/Linaro/hpc_lab_setup.git
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        source hpc_lab_setup/files/scripts/ohpc_install.sh
+                        bash hpc_lab_setup/files/scripts/ohpc_install.sh ${WORKSPACE} ${git_branch} ${node} ${method} ${slurmconf} -v

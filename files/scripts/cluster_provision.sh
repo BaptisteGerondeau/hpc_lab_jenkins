@@ -1,5 +1,19 @@
 #!/bin/bash
-set -ex
+
+if [ "$#" -gt 4 ] || [ "$#" -lt 3 ]; then
+	echo "Illegal number of arguments !"
+	echo "cluster_provision.sh [WORKSPACE] [machine_type] [scripts_branch] -v" 
+	echo "[required] optional"
+	exit 1
+fi
+
+if [ "${4}" == '-v' ]; then
+	set -ex
+fi
+
+WORKSPACE=$1
+machine_type=$2
+scripts_branch=$3
 
 if [ ${machine_type} == "qdc" ]; then
 	machine_list="qdcohpc, qdc01, qdc02, qdc03"
@@ -19,10 +33,11 @@ fi
 
 # Chose known good kernel/initrd/cmdline
 
+cd ${WORKSPACE}
 # Build trigger machine_provision job
 cat << EOF > machine_provision
+scripts_branch=${scripts_branch}
 machine_list=${machine_list}
-os_type=${os_type}
 machine_type=${machine_type}
 job_type=ohpc
 kernel_desc=${kernel_desc}

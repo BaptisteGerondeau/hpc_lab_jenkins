@@ -1,5 +1,21 @@
 #!/bin/bash
-set -ex
+
+if [ "$#" -gt 6 ] || [ "$#" -lt 5 ]; then
+	echo "Illegal number of arguments !"
+	echo "os_provision.sh [WORKSPACE] [scripts_branch] [machine_type] [job_type] [os_type]"
+	echo "[required] optional"
+	exit 1
+fi
+
+if [ "$6" == '-v' ]; then
+	set -ex
+fi
+
+WORKSPACE=$1
+scripts_branch=$2
+machine_type=$3
+job_type=$4
+os_type=$5
 
 # Chose default OS
 if [ "${os_type}" == "default" ]; then
@@ -43,10 +59,10 @@ if [ "${machine_type}" == "d03" ]; then
   kernel_opts="$kernel_opts modprobe.blacklist=hibmc_drm"
 fi
 
+cd ${WORKSPACE}
 # Build trigger machine_provision job
 cat << EOF > machine_provision
-joblogic_branch=${joblogic_branch}
-os_type=${os_type}
+scripts_branch=${scripts_branch}
 machine_type=${machine_type}
 job_type=${job_type}
 kernel_desc=${kernel_desc}

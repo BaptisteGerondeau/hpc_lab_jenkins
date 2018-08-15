@@ -1,5 +1,23 @@
 #!/bin/bash
-set -ex
+
+if [ "$#" -gt 6 ] || [ "$#" -lt 5 ]; then
+	echo "Illegal number of arguments !"
+	echo "ohpc_install.sh [WORKSPACE] [git_branch] [node] [method] slurmconf -v" 
+	echo "[required] optional"
+	exit 1
+fi
+
+if [ "$6" == '-v' ]; then
+	set -ex
+fi
+
+WORKSPACE=$1
+git_branch=$2
+node=$3
+method=$4
+slurmconf=$5
+
+
 cd ${WORKSPACE}
 eval `ssh-agent`
 ssh-add
@@ -10,7 +28,7 @@ fi
 git clone https://github.com/Linaro/mr-provisioner-client.git
 arch='aarch64'
 mr_provisioner_url='http://10.40.0.11:5000'
-mr_provisioner_token=$(cat "/home/${NODE_NAME}/mrp_token")
+mr_provisioner_token=$(cat "/home/$(whoami)/mrp_token")
 
 if [ ${node} == 'qdcohpc' ]; then
 	master_name='qdcohpc'

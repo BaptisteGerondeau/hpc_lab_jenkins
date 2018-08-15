@@ -33,13 +33,8 @@
                          name: node
                          default: ''
                          description: 'Node with which to provision the machine'
-                 - choice:
-                         name: joblogic_branch
-                         choices:
-                                 - master
-                                 - dev
-                                 - bger
-                                 - rengolin
+                 - string:
+                         name: scripts_branch
                          default: 'master'
                          description: 'The branch of the job logic to use'
                  - string:
@@ -102,6 +97,6 @@
                         if [ -d "hpc_lab_setup" ]; then
                                 rm -rf hpc_lab_setup
                         fi 
-                        git clone -b ${joblogic_branch} https://github.com/Linaro/hpc_lab_setup.git
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
                         
-                        source hpc_lab_setup/files/scripts/provisioning_job.sh
+                        bash hpc_lab_setup/files/scripts/provisioning_job.sh ${WORKSPACE} ${machine_name} ${kernel_desc} ${initrd_desc} ${branch} ${JENKINS_HOME} ${preseed_name} ${preseed_type} ${machine_arch} ${machine_subarch} ${kernel_opts} ${kernel_path} ${initrd_path} ${preseed_path} -v
