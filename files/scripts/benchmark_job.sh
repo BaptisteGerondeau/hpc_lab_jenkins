@@ -1,34 +1,46 @@
 #!/bin/bash
+set -x
 
-if [ "$#" -gt 13 ] || [ "$#" -lt 7 ]; then
-	echo "Illegal number of arguments !"
-	echo "benchmark_job.sh [WORKSPACE] [node] [compiler] [JENKINS_HOME (scripts)] [BUILD_NUMBER] [benchmark_gitbranch] [benchmark_name] compiler_flags link_flags benchmark_options benchmark_build_deps benchmark_run_deps -v (for set -ex)"
-	echo "[required] optional"
+helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l link_flags -o benchmark_options -d benchmark_build_deps -r benchmark_run_deps -v (for set -ex)"
+
+while getopts 'w:n:c:b:g:m:f:l:o:d:r:vh' flag
+do
+	echo $OPTARG
+	case $flag in
+		w ) WORKSPACE=$OPTARG;;
+		n ) node=$OPTARG;;
+		c ) compiler=$OPTARG;;
+		b ) BUILD_NUMBER=$OPTARG;;
+		g ) branch=$OPTARG;;
+		m ) benchmark=$OPTARG;;
+		f ) compiler_flags=$OPTARG;;
+		l ) link_flags=$OPTARG;;
+		o ) benchmark_options=$OPTARG;;
+		d ) benchmark_build_deps=$OPTARG;;
+		r ) benchmark_run_deps=$OPTARG;;
+		h ) echo $helpmsg
+		    exit 0
+		    ;;
+		v ) set -ex ;;
+		* ) exit 69 ;;
+	esac
+done
+
+if [ ! -n "${WORKSPACE}" ] || [ ! -n $node ] || [ ! -n $compiler ] || [ ! -n $BUILD_NUMBER ] || [ ! -n $branch ] || [ ! -n $benchmark ]; then
+	echo "MISSING REQUIRED ARGUMENT !!!"
+	echo $helpmsg
 	exit 1
 fi
 
-if [ "${13}" == '-v' ]; then
-	set -ex
+echo "${WORKSPACE}"
+if [ ! -d $WORKSPACE ]; then
+	exit 2
 fi
 
-WORKSPACE=$1
-node=$2
-compiler=$3
-JENKINS_HOME=$4
-BUILD_NUMBER=$5
-branch=$6
-benchmark=$7
-compiler_flags=$8
-link_flags=$9
-benchmark_options=${10}
-benchmark_build_deps=${11}
-benchmark_run_deps=${12}
-	
-cd ${WORKSPACE}
 eval `ssh-agent`
 ssh-add
 
-case ${node} in
+case "${node}" in
 d03*)
     vendor='huawei'
     node_type=d03
@@ -54,15 +66,19 @@ x86_64*)
     node_type=x86
     machine_type=x86_64
     ;;
+*)
+    echo "UNKNOWN MACHINE TYPE, Exiting..."
+    exit 2
+    ;;
 esac
-
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 if [[ ${compiler} = *"http://"* ]] || [[ ${compiler} = *"ftp://"* ]]; then
-	${JENKINS_HOME}/scripts/tarball_cacher.py ${compiler} /tmp/ --upload=sftp://10.40.0.13/toolchains
+	${DIR}/tarball_cacher.py ${compiler} /tmp/ --upload=sftp://10.40.0.13/toolchains
 	file=$(basename ${compiler})
 	compiler="http://10.40.0.13/toolchains/${file}"
 fi
 
-cat << EOF > benchmark_job.yml
+cat << EOF > ${WORKSPACE}/benchmark_job.yml
 mr_provisioner_url: http://10.40.0.11:5000
 mr_provisioner_token: $(cat "/home/$(whoami)/mrp_token")
 mr_provisioner_machine_name: ${node_type}bench
@@ -81,10 +97,9 @@ benchmark_build_deps: ${benchmark_build_deps}
 benchmark_run_deps: ${benchmark_run_deps}
 EOF
 
-if [ -d ansible-deploy-benchmarks ]; then
+if [ -d ${WORKSPACE}/ansible-deploy-benchmarks ]; then
     rm -rf ansible-deploy-benchmarks
 fi
-git clone -b ${branch} https://github.com/Linaro/ansible-deploy-benchmarks.git
-cd ansible-deploy-benchmarks
-ansible-playbook deploy_benchmarks.yml --extra-vars="@../benchmark_job.yml"
-ssh-agent -k 
+git clone -b ${branch} https://github.com/Linaro/ansible-deploy-benchmarks.git ${WORKSPACE}/ansible-deploy-benchmarks
+ansible-playbook ${WORKSPACE}/ansible-deploy-benchmarks/deploy_benchmarks.yml --extra-vars="@${WORKSPACE}/benchmark_job.yml"
+ssh-agent -k

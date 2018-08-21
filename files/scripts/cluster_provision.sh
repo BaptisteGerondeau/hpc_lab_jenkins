@@ -1,19 +1,30 @@
 #!/bin/bash
+set -x
 
-if [ "$#" -gt 4 ] || [ "$#" -lt 3 ]; then
-	echo "Illegal number of arguments !"
-	echo "cluster_provision.sh [WORKSPACE] [machine_type] [scripts_branch] -v" 
-	echo "[required] optional"
+helpmsg="cluster_provision.sh -w [WORKSPACE] -t [machine_type] -g [scripts_branch] -v -h" 
+
+while getopts "w:t:g:vh" flag ; do
+	case "$flag" in
+		w) WORKSPACE=$OPTARG;;
+		t) machine_type=$OPTARG;;
+		g) scripts_branch=$OPTARG;;
+		h ) echo $helpmsg
+		    exit 0
+		    ;;
+		v ) set -ex ;;
+		* ) exit 69 ;;
+	esac
+done
+
+if [ ! -n $WORKSPACE ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ]; then
+	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo $helpmsg
 	exit 1
 fi
 
-if [ "${4}" == '-v' ]; then
-	set -ex
+if [ ! -d ${WORKSPACE} ]; then
+	exit 2
 fi
-
-WORKSPACE=$1
-machine_type=$2
-scripts_branch=$3
 
 if [ ${machine_type} == "qdc" ]; then
 	machine_list="qdcohpc, qdc01, qdc02, qdc03"
@@ -33,9 +44,8 @@ fi
 
 # Chose known good kernel/initrd/cmdline
 
-cd ${WORKSPACE}
 # Build trigger machine_provision job
-cat << EOF > machine_provision
+cat << EOF > ${WORKSPACE}/machine_provision
 scripts_branch=${scripts_branch}
 machine_list=${machine_list}
 machine_type=${machine_type}

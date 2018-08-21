@@ -1,31 +1,42 @@
 #!/bin/bash
+set -x
 
-if [ "$#" -gt 16 ] || [ "$#" -lt 12 ]; then
-	echo "Illegal number of arguments !"
-	echo "machine_provision.sh [WORKSPACE] [machine_list] [machine_type] [job_type] [scripts_branch] [machine_arch] [machine_subarch] [kernel_opts] [kernel_desc] [initrd_desc] [preseed_name] [preseed_type] kernel_path initrd_path preseed_path -v"
-	echo "[required] optional"
+helpmsg="machine_provision.sh -w [WORKSPACE] -m [machine_list] -t [machine_type] -j [job_type] -g [scripts_branch] -a [machine_arch] -s [machine_subarch] -o [kernel_opts] -k [kernel_desc] -i [initrd_desc] -p [preseed_name] -e [preseed_type] -y kernel_path -u initrd_path -i preseed_path -v -h"
+
+while getopts "w:m:t:j:g:a:s:o:k:i:p:e:y:u:i:vh" flag ; do
+	case "$flag" in
+		w) WORKSPACE=$OPTARG;;
+		m) machine_list=$OPTARG;;
+		t) machine_type=$OPTARG;;
+		j) job_type=$OPTARG;;
+		g) scripts_branch=$OPTARG;;
+		a) machine_arch=$OPTARG;;
+		s) machine_subarch=$OPTARG;;
+		o) kernel_opts=$OPTARG;;
+		k) kernel_desc=$OPTARG;;
+		i) initrd_desc=$OPTARG;;
+		p) preseed_name=$OPTARG;;
+		e) preseed_type=$OPTARG;;
+		z) kernel_path=$OPTARG;;
+		y) initrd_path=$OPTARG;;
+		x) preseed_path=$OPTARG;;
+		h ) echo $helpmsg
+		    exit 0
+		    ;;
+		v ) set -ex ;;
+		* ) exit 69 ;;
+	esac
+done
+
+if [ ! -n $WORKSPACE ] || [ ! -n $machine_list ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ] || [ ! -n $job_type ] || [ ! -n $machine_arch ] || [ ! -n $machine_subarch ] || [ ! -n $kernel_opts ] || [ ! -n $kernel_desc ] || [ ! -n $initrd_desc ] || [ ! -n $initrd_desc ] || [ ! -n $preseed_name ] || [ ! -n $preseed_type ]; then
+	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo $helpmsg
 	exit 1
 fi
 
-if [ "${16}" == '-v' ]; then
-	set -ex
+if [ ! -d ${WORKSPACE} ]; then
+	exit 2
 fi
-
-WORKSPACE=$1
-machine_list=$2
-machine_type=$3
-job_type=$4
-scripts_branch=$5
-machine_arch=$6
-machine_subarch=$7
-kernel_opts=$8
-kernel_desc=$9
-initrd_desc=${10}
-preseed_name=${11}
-preseed_type=${12}
-kernel_path=${13}
-initrd_path=${14}
-preseed_path=${15}
 
 # Defaults
 if [[ ${machine_list} == '' ]]; then
@@ -48,9 +59,8 @@ if [ "${machine_type}" == "qdc" ]; then
     machine_subarch=GrubWithOptionEfiboot
 fi
 
-cd ${WORKSPACE}
 # Build trigger file
-cat << EOF > mrp_provision
+cat << EOF > ${WORKSPACE}/mrp_provision
 node="${machine_type}${job_type}"
 scripts_branch=${scripts_branch}
 machine_name=${machine_name}

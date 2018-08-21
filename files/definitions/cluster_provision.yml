@@ -32,11 +32,6 @@
          parameters:
                  - string:
                          name: scripts_branch
-                         choices:
-                                 - master
-                                 - dev
-                                 - bger
-                                 - rengolin
                          default: 'master'
                          description: 'The branch of the job logic to use'
                  - choice:

@@ -1,21 +1,37 @@
 #!/bin/bash
+set -x
 
-if [ "$#" -gt 6 ] || [ "$#" -lt 5 ]; then
+helpmsg="os_provision.sh -w [WORKSPACE] -s [scripts_branch] -m [machine_type] -j [job_type] -o [os_type] -h -v"
+
+if [ "$#" -gt 11 ] || [ "$#" -lt 10 ]; then
 	echo "Illegal number of arguments !"
-	echo "os_provision.sh [WORKSPACE] [scripts_branch] [machine_type] [job_type] [os_type]"
+	echo $helpmsg 
 	echo "[required] optional"
 	exit 1
 fi
 
-if [ "$6" == '-v' ]; then
-	set -ex
+while getopts "w:s:m:j:o:hv" flag ; do
+	case "$flag" in
+		w) WORKSPACE=$OPTARG;;
+		s) scripts_branch=$OPTARG;;
+		m) machine_type=$OPTARG;;
+		j) job_type=$OPTARG;;
+		o) os_type=$OPTARG;;
+		h ) echo $helpmsg
+		    exit 0
+		    ;;
+		v ) set -ex ;;
+		* ) exit 69 ;;
+	esac
+done
+if [ ! -n $WORKSPACE ] || [ ! -n $scripts_branch ] || [ ! -n $machine_type ] || [ ! -n $job_type ] || [ ! -n $os_type ]; then 
+	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo $helpmsg
 fi
 
-WORKSPACE=$1
-scripts_branch=$2
-machine_type=$3
-job_type=$4
-os_type=$5
+if [ ! -d ${WORKSPACE} ]; then
+	exit 2
+fi
 
 # Chose default OS
 if [ "${os_type}" == "default" ]; then
@@ -59,9 +75,8 @@ if [ "${machine_type}" == "d03" ]; then
   kernel_opts="$kernel_opts modprobe.blacklist=hibmc_drm"
 fi
 
-cd ${WORKSPACE}
 # Build trigger machine_provision job
-cat << EOF > machine_provision
+cat << EOF > ${WORKSPACE}/machine_provision
 scripts_branch=${scripts_branch}
 machine_type=${machine_type}
 job_type=${job_type}

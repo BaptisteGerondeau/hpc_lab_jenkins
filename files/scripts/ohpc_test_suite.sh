@@ -1,30 +1,46 @@
 #!/bin/bash
+set -x
 
-if [ "$#" -gt 6 ] || [ "$#" -lt 5 ]; then
+helpmsg="ohpc_install.sh -w [WORKSPACE] -n [node] -m [method] -t [test_type] -b [mrp_branch] -g [git_branch] -h -v" 
+
+if [ "$#" -gt 14 ] || [ "$#" -lt 12 ]; then
 	echo "Illegal number of arguments !"
-	echo "ohpc_install.sh [WORKSPACE] [node] [method] [test_type] [git_branch] -v" 
+	echo $helpmsg 
 	echo "[required] optional"
 	exit 1
 fi
 
-if [ "$6" == '-v' ]; then
-	set -ex
+while getopts "w:n:m:t:b:g:vh" flag ; do
+	case "$flag" in
+		w) WORKSPACE=$OPTARG;;
+		g) git_branch=$OPTARG;;
+		n) node=$OPTARG;;
+		m) method=$OPTARG;;
+		t) test_type=$OPTARG;;
+		b) mrp_branch=$OPTARG;;
+		h ) echo $helpmsg
+		    exit 0
+		    ;;
+		v ) set -ex ;;
+		* ) exit 69 ;;
+	esac
+done
+if [ ! -n $WORKSPACE ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ] || [ ! -n $test_type ] || [ ! -n $mrp_branch ] || [ ! -n $git_branch]; then
+	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo $helpmsg
 fi
 
-WORKSPACE=$1
-node=$2
-method=$3
-test_type=$4
-git_branch=$5
+if [ ! -d ${WORKSPACE} ]; then
+	exit 2
+fi
 
-cd ${WORKSPACE}
 eval `ssh-agent`
 ssh-add
 	
-if [ -d mr-provisioner-client ]; then
-    rm -rf mr-provisioner-client
+if [ -d ${WORKSPACE}/mr-provisioner-client ]; then
+    rm -rf ${WORKSPACE}/mr-provisioner-client
 fi
-git clone https://github.com/Linaro/mr-provisioner-client.git
+git clone -b ${mrp_branch} https://github.com/Linaro/mr-provisioner-client.git ${WORKSPACE}/mr-provisioner-client
 arch='aarch64'
 mr_provisioner_url='http://10.40.0.11:5000'
 mr_provisioner_token=$(cat "/home/$(whoami)/mrp_token")
@@ -35,10 +51,10 @@ if [ ${node} == 'qdcohpc' ]; then
 	cnode02='qdc02'
 	cnode03='qdc03'
 	num_compute='3'
-	master_ip=$( ./mr-provisioner-client/mrp_client.py getip qdcohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01ip=$( ./mr-provisioner-client/mrp_client.py getip qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02ip=$( ./mr-provisioner-client/mrp_client.py getip qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03ip=$( ./mr-provisioner-client/mrp_client.py getip qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	master_ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdcohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 	compute_regex='qdc0[1-3]'
 elif [ ${node} == 'd05ohpc' ]; then
 	master_name='d05ohpc'
@@ -46,10 +62,10 @@ elif [ ${node} == 'd05ohpc' ]; then
 	cnode02='d0302'
 	cnode03='d0303'
 	num_compute='3' 
-	master_ip=$( ./mr-provisioner-client/mrp_client.py getip d05ohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01ip=$( ./mr-provisioner-client/mrp_client.py getip d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02ip=$( ./mr-provisioner-client/mrp_client.py getip d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03ip=$( ./mr-provisioner-client/mrp_client.py getip d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	master_ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d05ohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 	compute_regex='d030[1-3]'
 fi
 
@@ -59,16 +75,13 @@ elif [ ${method} == 'stateless' ]; then
 	enable_warewulf=True
 fi
 
-if [ -d ansible-playbook-for-ohpc ]; then
-    rm -rf ansible-playbook-for-ohpc
+if [ -d ${WORKSPACE}/ansible-playbook-for-ohpc ]; then
+    rm -rf ${WORKSPACE}/ansible-playbook-for-ohpc
 fi
-<<<<<<< HEAD
 
-=======
->>>>>>> e016af7... Moved def to new directory
-git clone -b ${git_branch} https://github.com/Linaro/ansible-playbook-for-ohpc.git
+git clone -b ${git_branch} https://github.com/Linaro/ansible-playbook-for-ohpc.git ${WORKSPACE}/ansible-playbook-for-ohpc
 
-cat << EOF > hosts
+cat << EOF > ${WORKSPACE}/hosts
 [sms]
 ${master_ip}
 [cnodes]
@@ -88,7 +101,7 @@ if [ ${test_type} == 'long' ]; then
 fi
 
 
-cat << EOF > ohpc_installation.yml
+cat << EOF > ${WORKSPACE}/ohpc_installation.yml
 sms_name: ${master_name}
 sms_ip: ${master_ip}
 enable_warewulf: ${enable_warewulf}
@@ -206,16 +219,15 @@ mpi_families: openmpi3
 compiler_families: gnu7
 EOF
 
-cd ansible-playbook-for-ohpc
-ansible-playbook run_testsuite.yml --extra-vars="@../ohpc_installation.yml" -i ../hosts
-cd ${WORKSPACE}
+ansible-playbook ${WORKSPACE}/ansible-playbook-for-ohpc/run_testsuite.yml --extra-vars="@${WORKSPACE}/ohpc_installation.yml" -i ${WORKSPACE}/hosts
 
 if [ -f "${master_ip}/tmp/junit-results.tar.gz" ]; then
     rm -rf ${WORKSPACE}/results
     mkdir ${WORKSPACE}/results
     tar -xf ${master_ip}/tmp/junit-results.tar.gz -C ${WORKSPACE}/results
 else
-    echo "FAILURE"
+    echo "FAILURE to find JUnit Results"
+    exit 1
 fi
 
 ssh-agent -k 

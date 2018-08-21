@@ -1,31 +1,49 @@
 #!/bin/bash
+set -x
 
-if [ "$#" -gt 6 ] || [ "$#" -lt 5 ]; then
+helpmsg="ohpc_install.sh -w [WORKSPACE] -g [git_branch] -p [mrp_branch] -n [node] -m [method] -c slurmconf -v -h" 
+
+if [ "$#" -gt 14 ] || [ "$#" -lt 12 ]; then
 	echo "Illegal number of arguments !"
-	echo "ohpc_install.sh [WORKSPACE] [git_branch] [node] [method] slurmconf -v" 
+	echo $helpmsg 
 	echo "[required] optional"
 	exit 1
 fi
 
-if [ "$6" == '-v' ]; then
-	set -ex
+while getopts "w:g:n:m:p:c:vh" flag ; do
+	case "$flag" in
+		w) WORKSPACE=$OPTARG;;
+		g) git_branch=$OPTARG;;
+		n) node=$OPTARG;;
+		m) method=$OPTARG;;
+		p) mrp_branch=$OPTARG;;
+		c) slurmconf=$OPTARG;;
+		h ) echo $helpmsg
+		    exit 0
+		    ;;
+		v ) set -ex ;;
+		* ) exit 69 ;;
+	esac
+done
+
+if [ ! -n $WORKSPACE ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ]; then
+	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo $helpmsg
 fi
 
-WORKSPACE=$1
-git_branch=$2
-node=$3
-method=$4
-slurmconf=$5
+if [ ! -d ${WORKSPACE} ]; then
+	exit 2
+fi
 
-
-cd ${WORKSPACE}
 eval `ssh-agent`
 ssh-add
 	
-if [ -d mr-provisioner-client ]; then
-    rm -rf mr-provisioner-client
+if [ -d ${WORKSPACE}/mr-provisioner-client ]; then
+    rm -rf ${WORKSPACE}/mr-provisioner-client
 fi
-git clone https://github.com/Linaro/mr-provisioner-client.git
+
+git clone -b ${mrp_branch} https://github.com/Linaro/mr-provisioner-client.git ${WORKSPACE}/mr-provisioner-client
+
 arch='aarch64'
 mr_provisioner_url='http://10.40.0.11:5000'
 mr_provisioner_token=$(cat "/home/$(whoami)/mrp_token")
@@ -38,13 +56,13 @@ if [ ${node} == 'qdcohpc' ]; then
 	master_eth_internal='eth0'
 	eth_provision='eth0'
 	num_compute='3'
-	master_ip=$( ./mr-provisioner-client/mrp_client.py getip qdcohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01ip=$( ./mr-provisioner-client/mrp_client.py getip qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01mac=$( ./mr-provisioner-client/mrp_client.py getmac qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02ip=$( ./mr-provisioner-client/mrp_client.py getip qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02mac=$( ./mr-provisioner-client/mrp_client.py getmac qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03ip=$( ./mr-provisioner-client/mrp_client.py getip qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03mac=$( ./mr-provisioner-client/mrp_client.py getmac qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	master_ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdcohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01mac=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getmac qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02mac=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getmac qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03mac=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getmac qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 	compute_prefix='qdc0'
 	compute_regex='qdc0[1-3]'
 	kargs=''
@@ -57,13 +75,13 @@ elif [ ${node} == 'd05ohpc' ]; then
 	master_eth_internal='enahisic2i1'
 	eth_provision='enahisic2i1'
 	num_compute='3' 
-	master_ip=$( ./mr-provisioner-client/mrp_client.py getip d05ohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01ip=$( ./mr-provisioner-client/mrp_client.py getip d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01mac=$( ./mr-provisioner-client/mrp_client.py getmac d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02ip=$( ./mr-provisioner-client/mrp_client.py getip d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02mac=$( ./mr-provisioner-client/mrp_client.py getmac d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03ip=$( ./mr-provisioner-client/mrp_client.py getip d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03mac=$( ./mr-provisioner-client/mrp_client.py getmac d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	master_ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d05ohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01mac=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getmac d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02mac=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getmac d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03mac=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getmac d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 	compute_prefix='d030'
 	compute_regex='d030[1-3]'
 	kargs=''
@@ -103,22 +121,22 @@ else
 	echo 'Not implemented yet !!'
 fi
 
-if [ -d ansible-playbook-for-ohpc ]; then
-    rm -rf ansible-playbook-for-ohpc
+if [ -d ${WORKSPACE}/ansible-playbook-for-ohpc ]; then
+    rm -rf ${WORKSPACE}/ansible-playbook-for-ohpc
 fi
-git clone -b ${git_branch} https://github.com/Linaro/ansible-playbook-for-ohpc.git
+git clone -b ${git_branch} https://github.com/Linaro/ansible-playbook-for-ohpc.git ${WORKSPACE}/ansible-playbook-for-ohpc
 
 
 # Retrieve the slurm.conf file
 if [ ${slurmconf} != '' ]; then
 	olddir=$(pwd)
-	cd ansible-playbook-for-ohpc/roles/slurm-client/files
+	cd ${WORKSPACE}/ansible-playbook-for-ohpc/roles/slurm-client/files
 	sftp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no 10.40.0.13:${slurmconf}
 	mv $(basename ${slurmconf}) slurm.conf
 	cd ${olddir}
 fi
 
-cat << EOF > hosts
+cat << EOF > ${WORKSPACE}/hosts
 [sms]
 ${master_ip}
 [cnodes]
@@ -132,7 +150,7 @@ ${master_ip}
 EOF
 
 
-cat << EOF > ohpc_installation.yml
+cat << EOF > ${WORKSPACE}/ohpc_installation.yml
 sms_name: ${master_name}
 sms_ip: ${master_ip}
 sms_eth_internal: ${master_eth_internal}
@@ -176,7 +194,6 @@ compute_nodes:
 - { num: 3, c_name: "${cnode03}", c_ip: "${cnode03ip}", c_mac: "${cnode03mac}", c_bmc: "10.41.1.0"}
 EOF
 
-cd ansible-playbook-for-ohpc
-ansible-playbook site.yml --extra-vars="@../ohpc_installation.yml" -i ../hosts
+ansible-playbook ${WORKSPACE}/ansible-playbook-for-ohpc/site.yml --extra-vars="@${WORKSPACE}/ohpc_installation.yml" -i ${WORKSPACE}/hosts
 
 ssh-agent -k 
