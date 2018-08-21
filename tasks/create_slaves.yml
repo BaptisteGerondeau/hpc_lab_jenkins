@@ -29,24 +29,14 @@
       flat: yes
   with_list: "{{ jslave_list }}"
 
-- name: Putting the keys into the template for the fileserver
-  template:
-    src: "templates/jslaves-openhpc.yml.j2"
-    dest: "/tmp/jslaves-openhpc.yml"
-
-- name: Putting the keys into the template for the fileserver
-  template:
-    src: "templates/jslaves-benchmark.yml.j2"
-    dest: "/tmp/jslaves-benchmark.yml"
-    
 - name: Get the template back
-  fetch:
-    src: "/tmp/{{ item }}"
-    dest: "./vars/{{ item }}.secret"
-    flat: yes
+  template:
+    src: "{{ playbook_dir }}/templates/{{ item }}.j2"
+    dest: "{{ playbook_dir }}/templates/{{ item }}.secret"
   with_items:
         - jslaves-benchmark.yml
         - jslaves-openhpc.yml
+  delegate_to: localhost
 
 - name: Add Master Jenkins' ssh key to the slaves authorized list
   authorized_key:
