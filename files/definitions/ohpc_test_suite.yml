@@ -41,6 +41,10 @@
                          name: scripts_branch
                          default: 'master'
                          description: 'The branch of the job logic to use'
+                 - string:
+                         name: mrp_branch
+                         default: 'master'
+                         description: 'The branch of the MrP client to use'
                  - choice:
                          name: method
                          choices:
@@ -69,7 +73,7 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/ohpc_test_suite.sh "${WORKSPACE}" "${node}" "${method}" "${test_type}" "${git_branch}" -v
+                        bash hpc_lab_setup/files/scripts/ohpc_test_suite.sh -w "${WORKSPACE}" -n "${node}" -m "${method}" -t "${test_type}" -b "${mrp_branch}" -g "${git_branch}" -v
 
          publishers:
                  - junit:

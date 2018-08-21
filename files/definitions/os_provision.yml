@@ -68,7 +68,7 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/os_provision.sh "${WORKSPACE}" "${scripts_branch}" "${machine_type}" "${job_type}" "${os_type}" -v
+                        bash hpc_lab_setup/files/scripts/os_provision.sh -w "${WORKSPACE}" -s "${scripts_branch}" -m "${machine_type}" -j "${job_type}" -o "${os_type}" -v
 
                         if [ ! -f machine_provision ]; then
                                 exit 1

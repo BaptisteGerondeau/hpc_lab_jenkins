@@ -118,4 +118,4 @@
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 >>>>>>> Decoupled and added command line 'parsing':files/definitions/benchmark_job.yml
 
-                        bash hpc_lab_setup/files/scripts/benchmark_job.sh "${WORKSPACE}" "${node}" "${compiler}" "${JENKINS_HOME}" "${BUILD_NUMBER}" "${branch}" "${benchmark}" "${compiler_flags}" "${link_flags}" "${benchmark_options}" "${benchmark_build_deps}" "${benchmark_run_deps}" -v
+                        bash hpc_lab_setup/files/scripts/benchmark_job.sh -w "${WORKSPACE}" -n "${node}" -c "${compiler}" -b "${BUILD_NUMBER}" -g "${branch}" -m "${benchmark}" -f "${compiler_flags}" -l "${link_flags}" -o "${benchmark_options}" -d "${benchmark_build_deps}" -r "${benchmark_run_deps}" -v

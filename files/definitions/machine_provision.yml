@@ -88,7 +88,7 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
                         
-                        bash hpc_lab_setup/files/scripts/machine_provision.sh "${WORKSPACE}" "${machine_list}" "${machine_type}" "${job_type}" "${scripts_branch}" "${machine_arch}" "${machine_subarch}" "${kernel_opts}" "${kernel_desc}" "${initrd_desc}" "${preseed_name}" "${preseed_type}" "${kernel_path}" "${initrd_path}" "${preseed_path}" -v
+                        bash hpc_lab_setup/files/scripts/machine_provision.sh -w "${WORKSPACE}" -m "${machine_list}" -t "${machine_type}" -j "${job_type}" -g "${scripts_branch}" -a "${machine_arch}" -s "${machine_subarch}" -o "${kernel_opts}" -k "${kernel_desc}" -i "${initrd_desc}" -p "${preseed_name}" -e "${preseed_type}" -y "${kernel_path}" -u "${initrd_path}" -i "${preseed_path}" -v
 
                         if [ ! -f mrp_provision ]; then
                                 exit 1

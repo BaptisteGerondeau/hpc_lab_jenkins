@@ -41,6 +41,10 @@
                          name: scripts_branch
                          default: 'master'
                          description: 'The branch of the job logic to use'
+                 - string:
+                         name: mrp_branch
+                         default: 'master'
+                         description: 'The branch of the MrP client to use'
                  - choice:
                          name: method
                          choices:
@@ -66,4 +70,4 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/ohpc_install.sh "${WORKSPACE}" "${git_branch}" "${node}" "${method}" "${slurmconf}" -v
+                        bash hpc_lab_setup/files/scripts/ohpc_install.sh -w "${WORKSPACE}" -g "${git_branch}" -p "${mrp_branch}" -n "${node}" -m  "${method}" -c "${slurmconf}" -v
