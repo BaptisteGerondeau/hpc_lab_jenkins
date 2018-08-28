@@ -3,13 +3,6 @@ set -x
 
 helpmsg="ohpc_install.sh -w [WORKSPACE] -g [git_branch] -p [mrp_branch] -n [node] -m [method] -c slurmconf -v -h" 
 
-if [ "$#" -gt 14 ] || [ "$#" -lt 12 ]; then
-	echo "Illegal number of arguments !"
-	echo $helpmsg 
-	echo "[required] optional"
-	exit 1
-fi
-
 while getopts "w:g:n:m:p:c:vh" flag ; do
 	case "$flag" in
 		w) WORKSPACE=$OPTARG;;
@@ -22,12 +15,12 @@ while getopts "w:g:n:m:p:c:vh" flag ; do
 		    exit 0
 		    ;;
 		v ) set -ex ;;
-		* ) exit 69 ;;
+		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
 	esac
 done
 
 if [ ! -n $WORKSPACE ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ]; then
-	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo "Missing Required Arguments !!!"
 	echo $helpmsg
 fi
 
@@ -35,9 +28,6 @@ if [ ! -d ${WORKSPACE} ]; then
 	exit 2
 fi
 
-eval `ssh-agent`
-ssh-add
-	
 if [ -d ${WORKSPACE}/mr-provisioner-client ]; then
     rm -rf ${WORKSPACE}/mr-provisioner-client
 fi
@@ -47,6 +37,11 @@ git clone -b ${mrp_branch} https://github.com/Linaro/mr-provisioner-client.git $
 arch='aarch64'
 mr_provisioner_url='http://10.40.0.11:5000'
 mr_provisioner_token=$(cat "/home/$(whoami)/mrp_token")
+
+# BMC IP is a parameter for Warewulf conf. Warewulf doesn't have to touch them, so dummy IP.
+cnode01bmc="10.41.0.0"
+cnode02bmc=$cnode01bmc
+cnode03bmc=$cnode01bmc
 
 if [ ${node} == 'qdcohpc' ]; then
 	master_name='qdcohpc'
@@ -189,11 +184,14 @@ num_computes: ${num_compute}
 compute_regex: ${compute_regex}
 compute_prefix: ${compute_prefix}
 compute_nodes:
-- { num: 1, c_name: "${cnode01}", c_ip: "${cnode01ip}", c_mac: "${cnode01mac}", c_bmc: "10.41.1.0"}
-- { num: 2, c_name: "${cnode02}", c_ip: "${cnode02ip}", c_mac: "${cnode02mac}", c_bmc: "10.41.1.0"}
-- { num: 3, c_name: "${cnode03}", c_ip: "${cnode03ip}", c_mac: "${cnode03mac}", c_bmc: "10.41.1.0"}
+- { num: 1, c_name: "${cnode01}", c_ip: "${cnode01ip}", c_mac: "${cnode01mac}", c_bmc: "${cnode01bmc}"}
+- { num: 2, c_name: "${cnode02}", c_ip: "${cnode02ip}", c_mac: "${cnode02mac}", c_bmc: "${cnode02bmc}"}
+- { num: 3, c_name: "${cnode03}", c_ip: "${cnode03ip}", c_mac: "${cnode03mac}", c_bmc: "${cnode03bmc}"}
 EOF
 
+eval `ssh-agent`
+ssh-add
+	
 ansible-playbook ${WORKSPACE}/ansible-playbook-for-ohpc/site.yml --extra-vars="@${WORKSPACE}/ohpc_installation.yml" -i ${WORKSPACE}/hosts
 
 ssh-agent -k 

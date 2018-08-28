@@ -43,7 +43,7 @@
                          name: scripts_branch
                          default: 'master'
                          description: 'The branch of the job logic to use'
-                 - choice:
+                 - string:
                          name: branch
                          default: 'master'
                          description: 'The benchmark_harness branch to use'

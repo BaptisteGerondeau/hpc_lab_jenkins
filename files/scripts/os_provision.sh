@@ -3,13 +3,6 @@ set -x
 
 helpmsg="os_provision.sh -w [WORKSPACE] -s [scripts_branch] -m [machine_type] -j [job_type] -o [os_type] -h -v"
 
-if [ "$#" -gt 11 ] || [ "$#" -lt 10 ]; then
-	echo "Illegal number of arguments !"
-	echo $helpmsg 
-	echo "[required] optional"
-	exit 1
-fi
-
 while getopts "w:s:m:j:o:hv" flag ; do
 	case "$flag" in
 		w) WORKSPACE=$OPTARG;;
@@ -21,11 +14,11 @@ while getopts "w:s:m:j:o:hv" flag ; do
 		    exit 0
 		    ;;
 		v ) set -ex ;;
-		* ) exit 69 ;;
+		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
 	esac
 done
 if [ ! -n $WORKSPACE ] || [ ! -n $scripts_branch ] || [ ! -n $machine_type ] || [ ! -n $job_type ] || [ ! -n $os_type ]; then 
-	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo "Missing Required Arguments !!!"
 	echo $helpmsg
 fi
 
