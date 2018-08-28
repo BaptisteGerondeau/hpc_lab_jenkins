@@ -83,7 +83,7 @@ mr_provisioner_machine_name: ${node_type}bench
 sftp_dirname: ${node_type}-${BUILD_NUMBER}
 sftp_user: $(whoami)
 sftp_server_ip: 10.40.0.13
-vendor: ${vendor}
+sftp_path: ${vendor}/benchmark
 branch: ${branch}
 benchmark: ${benchmark}
 size: ${size}
