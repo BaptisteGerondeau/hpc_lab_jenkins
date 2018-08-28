@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l linker_flags -o run_flags -h harness_options -v (for set -ex)"
+helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l linker_flags -o run_flags -e harness_options -v (for set -ex)"
 
 while getopts 'w:n:c:b:g:m:f:l:o:h:vh' flag
 do
@@ -16,7 +16,7 @@ do
 		f ) compiler_flags=$OPTARG;;
 		l ) linker_flags=$OPTARG;;
 		o ) run_flags=$OPTARG;;
-		d ) harness_options=$OPTARG;;
+		e ) harness_options=$OPTARG;;
 		h ) echo $helpmsg
 		    exit 0
 		    ;;
