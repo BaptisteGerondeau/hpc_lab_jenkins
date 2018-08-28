@@ -31,6 +31,10 @@
                                  - job-read
          parameters:
                  - string:
+                         name: scripts_branch
+                         default: 'master'
+                         description: 'The branch of the job logic to use'
+                 - string:
                          name: machine_type
                          default: ''
                          description: 'The MrP name of the machine to provision'
@@ -42,10 +46,6 @@
                          name: job_type
                          default: 'bench'
                          description: 'The job type you will execute on the machine: ohpc, bench'
-                 - string:
-                         name: os_type
-                         default: 'Debian'
-                         description: 'The os type the machine will be provisioned with'
                  - string:
                          name: kernel_desc
                          default: ''
@@ -83,42 +83,16 @@
                         #!/bin/bash
                         set -ex
 
-                        # Defaults
-                        if [[ ${machine_list} == '' ]]; then
-                                machine_name="${machine_type}${job_type}"
-                        else
-                                machine_list="$( echo "$machine_list"| tr -d '[:space:]')"
-                                machine_name=${machine_list}
-                        fi
-                        machine_arch=AArch64
-                        machine_subarch=Grub
+                        if [ -d "hpc_lab_setup" ]; then
+                                rm -rf hpc_lab_setup
+                        fi 
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
+                        
+                        bash hpc_lab_setup/files/scripts/machine_provision.sh -w "${WORKSPACE}" -m "${machine_list}" -t "${machine_type}" -j "${job_type}" -g "${scripts_branch}" -a "${machine_arch}" -s "${machine_subarch}" -o "${kernel_opts}" -k "${kernel_desc}" -i "${initrd_desc}" -p "${preseed_name}" -e "${preseed_type}" -y "${kernel_path}" -u "${initrd_path}" -i "${preseed_path}" -v
 
-                        # Special cases
-                        if [ "${machine_type}" == "d03" ]; then
-                            kernel_opts="${kernel_opts} earlycon console=ttyS0,115200"
-                        else
-                            kernel_opts="${kernel_opts} earlycon console=ttyAMA0,115200"
+                        if [ ! -f mrp_provision ]; then
+                                exit 1
                         fi
-
-                        if [ "${machine_type}" == "qdc" ]; then
-                            machine_subarch=GrubWithOptionEfiboot
-                        fi
-
-                        # Build trigger file
-                        cat << EOF > mrp_provision
-                        node="${machine_type}${job_type}"
-                        machine_name=${machine_name}
-                        machine_arch=${machine_arch}
-                        machine_subarch=${machine_subarch}
-                        kernel_opts=${kernel_opts}
-                        kernel_desc=${kernel_desc}
-                        initrd_desc=${initrd_desc}
-                        preseed_name=${preseed_name}
-                        preseed_type=${preseed_type}
-                        kernel_path=${kernel_path}
-                        initrd_path=${initrd_path}
-                        preseed_path=${preseed_path}
-                        EOF
 
                  - conditional-step:
                          condition-kind: file-exists

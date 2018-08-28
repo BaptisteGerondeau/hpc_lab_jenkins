@@ -1,0 +1,82 @@
+ - job:
+         name: ohpc_test_suite
+         description: "This is the job to run the OpenHPC test suite on a cluster"
+         project-type: freestyle
+         block-downstream: false
+         concurrent: true
+         properties:
+                 - authorization:
+                         hpc-sig-admin:
+                                 - credentials-create
+                                 - credentials-delete
+                                 - credentials-manage-domains
+                                 - credentials-update
+                                 - credentials-view
+                                 - job-build
+                                 - job-cancel
+                                 - job-configure
+                                 - job-delete
+                                 - job-discover
+                                 - job-move
+                                 - job-read
+                                 - job-status
+                                 - job-workspace
+                                 - ownership-jobs
+                                 - run-delete
+                                 - run-update
+                                 - scm-tag
+                         hpc-sig-devel:
+                                 - job-build
+                                 - job-read
+         parameters:
+                 - node:
+                         name: node
+                         allowed-slaves:
+                                 - d05ohpc
+                                 - qdcohpc
+                         allowed-multiselect: true
+                         ignore-offline-nodes: true
+                         description: 'Node on which to execute this job'
+                 - string:
+                         name: scripts_branch
+                         default: 'master'
+                         description: 'The branch of the job logic to use'
+                 - string:
+                         name: mrp_branch
+                         default: 'master'
+                         description: 'The branch of the MrP client to use'
+                 - choice:
+                         name: method
+                         choices:
+                                 - stateful
+                                 - stateless
+                         default: 'stateful'
+                         description: 'The type of OHPC install to do'
+                 - choice:
+                         name: test_type
+                         choices:
+                                 - long
+                                 - short
+                         default: 'short'
+                         description: 'The length of the tests' 
+                 - string:
+                         name: git_branch
+                         default: 'production'
+                         description: 'Branch name of the ohpc install recipe'
+         builders:
+                 - shell: |
+                        #!/bin/bash
+                        set -ex
+
+                        if [ -d "hpc_lab_setup" ]; then
+                                rm -rf hpc_lab_setup
+                        fi 
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
+
+                        bash hpc_lab_setup/files/scripts/ohpc_test_suite.sh -w "${WORKSPACE}" -n "${node}" -m "${method}" -t "${test_type}" -b "${mrp_branch}" -g "${git_branch}" -v
+
+         publishers:
+                 - junit:
+                        results: "results/*.xml, results/**/*.xml, results/**/**/*.xml, results/**/**/**/*.xml, results/**/**/**/**/*.xml"
+                        keep-long-stdio: yes
+                        allow-empty-results: yes
