@@ -1,9 +1,9 @@
 #!/bin/bash
 set -x
 
-helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l link_flags -o benchmark_options -d benchmark_build_deps -r benchmark_run_deps -v (for set -ex)"
+helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l linker_flags -o run_flags -h harness_options -v (for set -ex)"
 
-while getopts 'w:n:c:b:g:m:f:l:o:d:r:vh' flag
+while getopts 'w:n:c:b:g:m:f:l:o:h:vh' flag
 do
 	echo $OPTARG
 	case $flag in
@@ -14,10 +14,9 @@ do
 		g ) branch=$OPTARG;;
 		m ) benchmark=$OPTARG;;
 		f ) compiler_flags=$OPTARG;;
-		l ) link_flags=$OPTARG;;
-		o ) benchmark_options=$OPTARG;;
-		d ) benchmark_build_deps=$OPTARG;;
-		r ) benchmark_run_deps=$OPTARG;;
+		l ) linker_flags=$OPTARG;;
+		o ) run_flags=$OPTARG;;
+		d ) harness_options=$OPTARG;;
 		h ) echo $helpmsg
 		    exit 0
 		    ;;
@@ -88,10 +87,9 @@ benchmark: ${benchmark}
 machine_type: ${machine_type}
 compiler: ${compiler}
 compiler_flags: ${compiler_flags}
-link_flags: ${link_flags}
-benchmark_options: ${benchmark_options}
-benchmark_build_deps: ${benchmark_build_deps}
-benchmark_run_deps: ${benchmark_run_deps}
+linker_flags: ${link_flags}
+run_flags: ${run_flags}
+harness_options: ${harness_options}
 EOF
 
 if [ -d ${WORKSPACE}/ansible-deploy-benchmarks ]; then
