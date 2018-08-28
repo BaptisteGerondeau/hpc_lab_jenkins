@@ -17,8 +17,8 @@ while getopts "w:m:t:j:g:a:s:o:k:i:p:e:y:u:i:vh" flag ; do
 		i) initrd_desc=$OPTARG;;
 		p) preseed_name=$OPTARG;;
 		e) preseed_type=$OPTARG;;
-		z) kernel_path=$OPTARG;;
-		y) initrd_path=$OPTARG;;
+		y) kernel_path=$OPTARG;;
+		u) initrd_path=$OPTARG;;
 		x) preseed_path=$OPTARG;;
 		h ) echo $helpmsg
 		    exit 0
