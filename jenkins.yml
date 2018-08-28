@@ -51,7 +51,7 @@
                     state: present
                     key: "{{ ssh_keyscan_result.stdout }}"
 
-          - name: Create jenkins_slave group to keep them from unionizing
+          - name: Create jenkins_slave group
             group:
                     name: jenkins_slave
                     state: present

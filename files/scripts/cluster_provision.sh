@@ -12,12 +12,12 @@ while getopts "w:t:g:vh" flag ; do
 		    exit 0
 		    ;;
 		v ) set -ex ;;
-		* ) exit 69 ;;
+		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
 	esac
 done
 
 if [ ! -n $WORKSPACE ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ]; then
-	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo "Missing Required Argument(s) !!!"
 	echo $helpmsg
 	exit 1
 fi
@@ -26,6 +26,7 @@ if [ ! -d ${WORKSPACE} ]; then
 	exit 2
 fi
 
+# Chose known good kernel/initrd/cmdline
 if [ ${machine_type} == "qdc" ]; then
 	machine_list="qdcohpc, qdc01, qdc02, qdc03"
 	preseed_type="kickstart"
@@ -41,8 +42,6 @@ elif [ ${machine_type} == "d05" ]; then
 	preseed_name="CentOS"
 	kernel_opts="ip=dhcp text inst.stage2=http://releases.linaro.org/reference-platform/enterprise/18.06/centos-installer/ inst.repo=http://mirror.centos.org/altarch/7/os/aarch64/ inst.ks=file:/ks.cfg"
 fi
-
-# Chose known good kernel/initrd/cmdline
 
 # Build trigger machine_provision job
 cat << EOF > ${WORKSPACE}/machine_provision

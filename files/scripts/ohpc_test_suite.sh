@@ -3,13 +3,6 @@ set -x
 
 helpmsg="ohpc_install.sh -w [WORKSPACE] -n [node] -m [method] -t [test_type] -b [mrp_branch] -g [git_branch] -h -v" 
 
-if [ "$#" -gt 14 ] || [ "$#" -lt 12 ]; then
-	echo "Illegal number of arguments !"
-	echo $helpmsg 
-	echo "[required] optional"
-	exit 1
-fi
-
 while getopts "w:n:m:t:b:g:vh" flag ; do
 	case "$flag" in
 		w) WORKSPACE=$OPTARG;;
@@ -22,11 +15,11 @@ while getopts "w:n:m:t:b:g:vh" flag ; do
 		    exit 0
 		    ;;
 		v ) set -ex ;;
-		* ) exit 69 ;;
+		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
 	esac
 done
 if [ ! -n $WORKSPACE ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ] || [ ! -n $test_type ] || [ ! -n $mrp_branch ] || [ ! -n $git_branch]; then
-	echo "MISSING REQUIRED ARGUMENTS !!!"
+	echo "Missing Required Arguments !!!"
 	echo $helpmsg
 fi
 
@@ -34,9 +27,6 @@ if [ ! -d ${WORKSPACE} ]; then
 	exit 2
 fi
 
-eval `ssh-agent`
-ssh-add
-	
 if [ -d ${WORKSPACE}/mr-provisioner-client ]; then
     rm -rf ${WORKSPACE}/mr-provisioner-client
 fi
@@ -218,6 +208,9 @@ configure_packages:
 mpi_families: openmpi3
 compiler_families: gnu7
 EOF
+
+eval `ssh-agent`
+ssh-add
 
 ansible-playbook ${WORKSPACE}/ansible-playbook-for-ohpc/run_testsuite.yml --extra-vars="@${WORKSPACE}/ohpc_installation.yml" -i ${WORKSPACE}/hosts
 

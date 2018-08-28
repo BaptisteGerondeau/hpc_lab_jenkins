@@ -22,12 +22,12 @@ do
 		    exit 0
 		    ;;
 		v ) set -ex ;;
-		* ) exit 69 ;;
+		* ) echo 'Illegal argument' && echo $helpmsg && exit 42 ;;
 	esac
 done
 
 if [ ! -n "${WORKSPACE}" ] || [ ! -n $node ] || [ ! -n $compiler ] || [ ! -n $BUILD_NUMBER ] || [ ! -n $branch ] || [ ! -n $benchmark ]; then
-	echo "MISSING REQUIRED ARGUMENT !!!"
+	echo "Missing Required Argument(s) !!!"
 	echo $helpmsg
 	exit 1
 fi
@@ -36,9 +36,6 @@ echo "${WORKSPACE}"
 if [ ! -d $WORKSPACE ]; then
 	exit 2
 fi
-
-eval `ssh-agent`
-ssh-add
 
 case "${node}" in
 d03*)
@@ -67,7 +64,7 @@ x86_64*)
     machine_type=x86_64
     ;;
 *)
-    echo "UNKNOWN MACHINE TYPE, Exiting..."
+    echo "Unknown node type : ${node} , Exiting..."
     exit 2
     ;;
 esac
@@ -100,6 +97,11 @@ EOF
 if [ -d ${WORKSPACE}/ansible-deploy-benchmarks ]; then
     rm -rf ansible-deploy-benchmarks
 fi
+
+eval `ssh-agent`
+ssh-add
+
 git clone -b ${branch} https://github.com/Linaro/ansible-deploy-benchmarks.git ${WORKSPACE}/ansible-deploy-benchmarks
 ansible-playbook ${WORKSPACE}/ansible-deploy-benchmarks/deploy_benchmarks.yml --extra-vars="@${WORKSPACE}/benchmark_job.yml"
+
 ssh-agent -k

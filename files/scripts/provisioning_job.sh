@@ -3,13 +3,6 @@ set -x
 
 helpmsg="provisioning_job.sh -w [WORKSPACE] -m [machine_name] -k [kernel_description] -i [initrd_description] -b [ansible_client_branch] -n [preseed_name] -t [preseed_type] -a [machine_arch] -s [machine_subarch] -o kernel_options -p kernel_path -y initrd_path -u preseed_path -v -h"
 
-if [ "$#" -gt 27 ] || [ "$#" -lt 19 ]; then
-	echo "Illegal number of arguments !"
-	echo $helpmsg 
-	echo "[required] optional"
-	exit 1
-fi
-
 while getopts "w:m:k:i:b:n:t:a:s:o:p:y:u:hv" flag ; do
 	case "$flag" in
 		w) WORKSPACE=$OPTARG;;
@@ -29,11 +22,11 @@ while getopts "w:m:k:i:b:n:t:a:s:o:p:y:u:hv" flag ; do
 		    exit 0
 		    ;;
 		v ) set -ex ;;
-		* ) exit 69 ;;
+		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
 	esac
 done
 if [ ! -n $WORKSPACE ] || [ ! -n $machine_name ] || [ ! -n $kernel_desc ] || [ ! -n $initrd_desc ] || [ ! -n $branch ] || [ ! -n $preseed_name ] || [ ! -n $preseed_type ] || [ ! -n $machine_arch ] || [ ! -n $machine_subarch ]; then
-	echo "MISSING REQUIRED ARGUMENT !!!"
+	echo "Missing Required Argument !!!"
 	echo $helpmsg
 	exit 1
 fi
@@ -65,4 +58,9 @@ if [ ! -f ${WORKSPACE}/${DIR_NAME}/provisioning${mname}.yml ]; then
 	exit 1
 fi
 
+eval `ssh-agent`
+ssh-add
+
 ansible-playbook ${WORKSPACE}/${DIR_NAME}/provisioning${mname}.yml -i ${WORKSPACE}/${DIR_NAME}/hosts --ssh-common-args="-o UserKnownHostsFile=/dev/null"
+
+ssh-agent -k
