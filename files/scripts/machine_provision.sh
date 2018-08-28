@@ -28,7 +28,7 @@ while getopts "w:m:t:j:g:a:s:o:k:i:p:e:y:u:i:vh" flag ; do
 	esac
 done
 
-if [ ! -n $WORKSPACE ] || [ ! -n $machine_list ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ] || [ ! -n $job_type ] || [ ! -n $machine_arch ] || [ ! -n $machine_subarch ] || [ ! -n $kernel_opts ] || [ ! -n $kernel_desc ] || [ ! -n $initrd_desc ] || [ ! -n $initrd_desc ] || [ ! -n $preseed_name ] || [ ! -n $preseed_type ]; then
+if [ ! -n $WORKSPACE ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ] || [ ! -n $job_type ] || [ ! -n $machine_arch ] || [ ! -n $machine_subarch ] || [ ! -n $kernel_opts ] || [ ! -n $kernel_desc ] || [ ! -n $initrd_desc ] || [ ! -n $initrd_desc ] || [ ! -n $preseed_name ] || [ ! -n $preseed_type ]; then
 	echo "Missing Required Argument(s) !!!"
 	echo $helpmsg
 	exit 1
