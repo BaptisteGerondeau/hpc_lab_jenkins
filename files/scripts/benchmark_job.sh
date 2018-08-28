@@ -1,9 +1,9 @@
 #!/bin/bash
 set -x
 
-helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l linker_flags -o run_flags -e harness_options -v (for set -ex)"
+helpmsg="benchmark_job.sh -w [WORKSPACE] -n [node] -c [compiler] -b [BUILD_NUMBER] -g [benchmark_gitbranch] -m [benchmark_name] -f compiler_flags -l linker_flags -o run_flags -e harness_options -s size -i iterations -v (for set -ex)"
 
-while getopts 'w:n:c:b:g:m:f:l:o:e:vh' flag
+while getopts 'w:n:c:b:g:m:f:l:o:e:s:i:vh' flag
 do
 	echo $OPTARG
 	case $flag in
@@ -17,6 +17,8 @@ do
 		l ) linker_flags=$OPTARG;;
 		o ) run_flags=$OPTARG;;
 		e ) harness_options=$OPTARG;;
+		s ) size=$OPTARG;;
+		i ) iterations=$OPTARG;;
 		h ) echo $helpmsg
 		    exit 0
 		    ;;
@@ -84,6 +86,8 @@ sftp_server_ip: 10.40.0.13
 vendor: ${vendor}
 branch: ${branch}
 benchmark: ${benchmark}
+size: ${size}
+iterations: ${iterations}
 machine_type: ${machine_type}
 compiler: ${compiler}
 compiler_flags: ${compiler_flags}

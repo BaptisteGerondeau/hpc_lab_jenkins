@@ -96,4 +96,4 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/benchmark_job.sh -w "${WORKSPACE}" -n "${node}" -c "${compiler}" -b "${BUILD_NUMBER}" -g "${branch}" -m "${benchmark}" -f "${compiler_flags}" -l "${linker_flags}" -o "${run_flags}" -e "${harness_options}" -v
+                        bash hpc_lab_setup/files/scripts/benchmark_job.sh -w "${WORKSPACE}" -n "${node}" -c "${compiler}" -b "${BUILD_NUMBER}" -g "${branch}" -m "${benchmark}" -f "${compiler_flags}" -l "${linker_flags}" -o "${run_flags}" -e "${harness_options}" -s "${size}" -i "${iterations}" -v
