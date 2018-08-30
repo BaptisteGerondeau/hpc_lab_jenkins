@@ -30,6 +30,14 @@
                                  - job-build
                                  - job-read
          parameters:
+                 - string:
+                         name: cluster_script_branch
+                         default: 'master'
+                         description: 'The branch of the cluster_provision job logic to use'
+                 - string:
+                         name: provisioning_script_branch
+                         default: 'master'
+                         description: 'The branch of the provisioning job logic to use'
                  - choice:
                          name: machine_type
                          choices:
@@ -42,6 +50,7 @@
                         #!/bin/bash
                         set -ex
 
+                        # Chose known good kernel/initrd/cmdline
                         if [ ${machine_type} == "qdc" ]; then
                                 machine_list="qdcohpc, qdc01, qdc02, qdc03"
                                 preseed_type="kickstart"
@@ -58,23 +67,16 @@
                                 kernel_opts="ip=dhcp text inst.stage2=http://releases.linaro.org/reference-platform/enterprise/18.06/centos-installer/ inst.repo=http://mirror.centos.org/altarch/7/os/aarch64/ inst.ks=file:/ks.cfg"
                         fi
 
-                        # Chose known good kernel/initrd/cmdline
+                        if [ -d "${WORKSPACE}/hpc_lab_setup" ]; then
+                                rm -rf "${WORKSPACE}/hpc_lab_setup"
+                        fi
+                        git clone -b ${cluster_script_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
 
-                        # Build trigger machine_provision job
-                        cat << EOF > machine_provision
-                        machine_list=${machine_list}
-                        os_type=${os_type}
-                        machine_type=${machine_type}
-                        job_type=ohpc
-                        kernel_desc=${kernel_desc}
-                        initrd_desc=${initrd_desc}
-                        preseed_name=${preseed_name}
-                        preseed_type=${preseed_type}
-                        kernel_opts=${kernel_opts}
-                        kernel_path=
-                        initrd_path=
-                        preseed_path=
-                        EOF
+                        bash "${WORKSPACE}/hpc_lab_setup/files/scripts/cluster_provision.sh" --workspace "${WORKSPACE}" --machine_type "${machine_type}" --machine_list "${machine_list}" --preseed_type "${preseed_type}" --kernel_desc "${kernel_desc}" --initrd_desc "${initrd_desc}" --preseed_name "${preseed_name}" --kernel_opts "${kernel_opts}" --scripts_branch "${provisioning_script_branch}"
+
+                        if [ ! -f "${WORKSPACE}/machine_provision" ]; then
+                                exit 1
+                        fi
 
                  - conditional-step:
                          condition-kind: file-exists
