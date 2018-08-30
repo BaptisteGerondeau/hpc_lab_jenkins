@@ -31,6 +31,10 @@
                                  - job-read
          parameters:
                  - string:
+                         name: scripts_branch
+                         default: 'master'
+                         description: 'The branch of the job logic to use'
+                 - string:
                          name: machine_type
                          default: ''
                          description: 'The MrP name of the machine to provision'
@@ -42,10 +46,6 @@
                          name: job_type
                          default: 'bench'
                          description: 'The job type you will execute on the machine: ohpc, bench'
-                 - string:
-                         name: os_type
-                         default: 'Debian'
-                         description: 'The os type the machine will be provisioned with'
                  - string:
                          name: kernel_desc
                          default: ''
@@ -83,6 +83,10 @@
                         #!/bin/bash
                         set -ex
 
+                        if [ -d "${WORKSPACE}/hpc_lab_setup" ]; then
+                                rm -rf "${WORKSPACE}/hpc_lab_setup"
+                        fi 
+
                         # Defaults
                         if [[ ${machine_list} == '' ]]; then
                                 machine_name="${machine_type}${job_type}"
@@ -104,21 +108,15 @@
                             machine_subarch=GrubWithOptionEfiboot
                         fi
 
-                        # Build trigger file
-                        cat << EOF > mrp_provision
-                        node="${machine_type}${job_type}"
-                        machine_name=${machine_name}
-                        machine_arch=${machine_arch}
-                        machine_subarch=${machine_subarch}
-                        kernel_opts=${kernel_opts}
-                        kernel_desc=${kernel_desc}
-                        initrd_desc=${initrd_desc}
-                        preseed_name=${preseed_name}
-                        preseed_type=${preseed_type}
-                        kernel_path=${kernel_path}
-                        initrd_path=${initrd_path}
-                        preseed_path=${preseed_path}
-                        EOF
+                        jenkins_slave="${machine_type}${job_type}"
+
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
+                        
+                        bash "${WORKSPACE}/hpc_lab_setup/files/scripts/machine_provision.sh" --workspace "${WORKSPACE}" --machine_name "${machine_name}" --node "${jenkins_slave}" --scripts_branch "${scripts_branch}" --machine_arch "${machine_arch}" --machine_subarch "${machine_subarch}" --kernel_opts "${kernel_opts}" --kernel_desc "${kernel_desc}" --initrd_desc "${initrd_desc}" --preseed_name "${preseed_name}" --preseed_type "${preseed_type}" --kernel_path "${kernel_path}" --initrd_path "${initrd_path}" --preseed_path "${preseed_path}"
+
+                        if [ ! -f "${WORKSPACE}/mrp_provision" ]; then
+                                exit 1
+                        fi
 
                  - conditional-step:
                          condition-kind: file-exists
