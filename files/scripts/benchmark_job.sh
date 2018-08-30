@@ -8,7 +8,7 @@ ARGUMENT_LIST=(
 	"node"
 	"compiler"
 	"build_number"
-	"git_branch"
+	"harness_branch"
 	"benchmark"
 	"compiler_flags"
 	"linker_flags"
@@ -22,13 +22,14 @@ root_dir="$(realpath $(dirname $0))"
 
 . ${root_dir}/argparse.sh
 
-if [ ! -n ${workspace} ] || [ ! -n ${node} ] || [ ! -n ${compiler} ] || [ ! -n ${build_number} ] || [ ! -n ${git_branch} ] || [ ! -n ${benchmark} ]; then
-	echo "Missing Required Argument(s) !!!"
+if [ ! -n "${workspace}" ] || [ ! -n ${node} ] || [ ! -n ${compiler} ] || [ ! -n ${build_number} ] || [ ! -n ${harness_branch} ] || [ ! -n ${benchmark} ]; then
+	echo "Missing Required Argument(s)"
 	echo $helpmsg
 	exit 1
 fi
 
 if [ ! -d "${workspace}" ]; then
+	echo "No Workspace at ${workspace}"
 	exit 2
 fi
 
@@ -78,7 +79,7 @@ sftp_user: ${NODE_NAME}
 sftp_server_ip: 10.40.0.13
 sftp_path: ${vendor}/benchmark
 machine_type: ${machine_type}
-branch: ${git_branch}
+branch: ${harness_branch}
 benchmark: ${benchmark}
 size: ${size}
 iterations: ${iterations}
@@ -89,15 +90,15 @@ run_flags: ${run_flags}
 harness_options: ${harness_options}
 EOF
 
-if [ -d ${workspace}/ansible-deploy-benchmarks ]; then
-    rm -rf ${workspace}/ansible-deploy-benchmarks
+if [ -d "${workspace}/ansible-deploy-benchmarks" ]; then
+    rm -rf "${workspace}/ansible-deploy-benchmarks"
 fi
 
-git clone -b ${git_branch} https://github.com/Linaro/ansible-deploy-benchmarks.git ${workspace}/ansible-deploy-benchmarks
+git clone -b ${harness_branch} https://github.com/Linaro/ansible-deploy-benchmarks.git "${workspace}/ansible-deploy-benchmarks"
 
 eval `ssh-agent`
 ssh-add
 
-ansible-playbook ${workspace}/ansible-deploy-benchmarks/deploy_benchmarks.yml --extra-vars="@${workspace}/benchmark_job.yml"
+ansible-playbook -v "${workspace}/ansible-deploy-benchmarks/deploy_benchmarks.yml" --extra-vars="@${workspace}/benchmark_job.yml"
 
 ssh-agent -k
