@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-helpmsg="ohpc_install.sh --workspace [WORKSPACE] --node [node] --method [method] --test_type [test_type] --mrp_branch [mrp_branch] --git_branch [git_branch] --h(elp) --v(erbose)" 
+helpmsg="ohpc_install.sh --workspace [workspace] --node [node] --method [method] --test_type [test_type] --mrp_branch [mrp_branch] --git_branch [git_branch] --h(elp) --v(erbose)" 
 
 ARGUMENT_LIST=(
 	"workspace"
@@ -21,19 +21,19 @@ elif [ $verbose == True ]; then
 	set -ex
 fi
 
-if [ ! -n $WORKSPACE ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ] || [ ! -n $test_type ] || [ ! -n $mrp_branch ] || [ ! -n $git_branch]; then
+if [ ! -n $workspace ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ] || [ ! -n $test_type ] || [ ! -n $mrp_branch ] || [ ! -n $git_branch]; then
 	echo "Missing Required Arguments !!!"
 	echo $helpmsg
 fi
 
-if [ ! -d ${WORKSPACE} ]; then
+if [ ! -d ${workspace} ]; then
 	exit 2
 fi
 
-if [ -d ${WORKSPACE}/mr-provisioner-client ]; then
-    rm -rf ${WORKSPACE}/mr-provisioner-client
+if [ -d ${workspace}/mr-provisioner-client ]; then
+    rm -rf ${workspace}/mr-provisioner-client
 fi
-git clone -b ${mrp_branch} https://github.com/Linaro/mr-provisioner-client.git ${WORKSPACE}/mr-provisioner-client
+git clone -b ${mrp_branch} https://github.com/Linaro/mr-provisioner-client.git ${workspace}/mr-provisioner-client
 arch='aarch64'
 mr_provisioner_url='http://10.40.0.11:5000'
 mr_provisioner_token=$(cat "/home/$(whoami)/mrp_token")
@@ -44,10 +44,10 @@ if [ ${node} == 'qdcohpc' ]; then
 	cnode02='qdc02'
 	cnode03='qdc03'
 	num_compute='3'
-	master_ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdcohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	master_ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip qdcohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip qdc01 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip qdc02 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip qdc03 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 	compute_regex='qdc0[1-3]'
 elif [ ${node} == 'd05ohpc' ]; then
 	master_name='d05ohpc'
@@ -55,10 +55,10 @@ elif [ ${node} == 'd05ohpc' ]; then
 	cnode02='d0302'
 	cnode03='d0303'
 	num_compute='3' 
-	master_ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d05ohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode01ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode02ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
-	cnode03ip=$( ${WORKSPACE}/mr-provisioner-client/mrp_client.py getip d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	master_ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip d05ohpc --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode01ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip d0301 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode02ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip d0302 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+	cnode03ip=$( ${workspace}/mr-provisioner-client/mrp_client.py getip d0303 --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 	compute_regex='d030[1-3]'
 fi
 
@@ -68,13 +68,13 @@ elif [ ${method} == 'stateless' ]; then
 	enable_warewulf=True
 fi
 
-if [ -d ${WORKSPACE}/ansible-playbook-for-ohpc ]; then
-    rm -rf ${WORKSPACE}/ansible-playbook-for-ohpc
+if [ -d ${workspace}/ansible-playbook-for-ohpc ]; then
+    rm -rf ${workspace}/ansible-playbook-for-ohpc
 fi
 
-git clone -b ${git_branch} https://github.com/Linaro/ansible-playbook-for-ohpc.git ${WORKSPACE}/ansible-playbook-for-ohpc
+git clone -b ${git_branch} https://github.com/Linaro/ansible-playbook-for-ohpc.git ${workspace}/ansible-playbook-for-ohpc
 
-cat << EOF > ${WORKSPACE}/hosts
+cat << EOF > ${workspace}/hosts
 [sms]
 ${master_ip}
 [cnodes]
@@ -94,7 +94,7 @@ if [ ${test_type} == 'long' ]; then
 fi
 
 
-cat << EOF > ${WORKSPACE}/ohpc_installation.yml
+cat << EOF > ${workspace}/ohpc_installation.yml
 sms_name: ${master_name}
 sms_ip: ${master_ip}
 enable_warewulf: ${enable_warewulf}
@@ -215,12 +215,12 @@ EOF
 eval `ssh-agent`
 ssh-add
 
-ansible-playbook ${WORKSPACE}/ansible-playbook-for-ohpc/run_testsuite.yml --extra-vars="@${WORKSPACE}/ohpc_installation.yml" -i ${WORKSPACE}/hosts
+ansible-playbook ${workspace}/ansible-playbook-for-ohpc/run_testsuite.yml --extra-vars="@${workspace}/ohpc_installation.yml" -i ${workspace}/hosts
 
 if [ -f "${master_ip}/tmp/junit-results.tar.gz" ]; then
-    rm -rf ${WORKSPACE}/results
-    mkdir ${WORKSPACE}/results
-    tar -xf ${master_ip}/tmp/junit-results.tar.gz -C ${WORKSPACE}/results
+    rm -rf ${workspace}/results
+    mkdir ${workspace}/results
+    tar -xf ${master_ip}/tmp/junit-results.tar.gz -C ${workspace}/results
 else
     echo "FAILURE to find JUnit Results"
     exit 1
