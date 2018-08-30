@@ -82,7 +82,7 @@ mr_provisioner_machine_name: ${node_type}bench
 sftp_dirname: ${node_type}-${build_number}
 sftp_user: $(whoami)
 sftp_server_ip: 10.40.0.13
-vendor: ${vendor}
+sftp_path: ${vendor}/benchmark
 branch: ${git_branch}
 benchmark: ${benchmark}
 machine_type: ${machine_type}

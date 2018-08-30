@@ -57,7 +57,7 @@
 
 - name: Copy the playbook maker script to their home dir
   copy:
-          src: "../files/provisioning.py"
+          src: "../files/scripts/provisioning.py"
           dest: "/home/{{ item }}/"
           owner: "{{ item }}"
           group: "jenkins_slave"

@@ -51,7 +51,7 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/cluster_provision.sh --workspace "${WORKSPACE}" --machine_type "${machine_type}" --scripts_branch "${scripts_branch}" --v
+                        bash ${WORKSPACE}/hpc_lab_setup/files/scripts/cluster_provision.sh --workspace "${WORKSPACE}" --machine_type "${machine_type}" --scripts_branch "${scripts_branch}" --v
 
                         if [ ! -f machine_provision ]; then
                                 exit 1

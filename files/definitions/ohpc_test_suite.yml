@@ -73,7 +73,7 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/ohpc_test_suite.sh --workspace "${WORKSPACE}" --node "${node}" --method "${method}" --test_type "${test_type}" --mrp_branch "${mrp_branch}" --git_branch "${git_branch}" --v
+                        bash ${WORKSPACE}/hpc_lab_setup/files/scripts/ohpc_test_suite.sh --workspace "${WORKSPACE}" --node "${node}" --method "${method}" --test_type "${test_type}" --mrp_branch "${mrp_branch}" --git_branch "${git_branch}" --v
 
          publishers:
                  - junit:
