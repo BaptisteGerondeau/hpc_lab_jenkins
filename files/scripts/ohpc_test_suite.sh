@@ -1,23 +1,26 @@
 #!/bin/bash
 set -x
 
-helpmsg="ohpc_install.sh -w [WORKSPACE] -n [node] -m [method] -t [test_type] -b [mrp_branch] -g [git_branch] -h -v" 
+helpmsg="ohpc_install.sh --workspace [WORKSPACE] --node [node] --method [method] --test_type [test_type] --mrp_branch [mrp_branch] --git_branch [git_branch] --h(elp) --v(erbose)" 
 
-while getopts "w:n:m:t:b:g:vh" flag ; do
-	case "$flag" in
-		w) WORKSPACE=$OPTARG;;
-		g) git_branch=$OPTARG;;
-		n) node=$OPTARG;;
-		m) method=$OPTARG;;
-		t) test_type=$OPTARG;;
-		b) mrp_branch=$OPTARG;;
-		h ) echo $helpmsg
-		    exit 0
-		    ;;
-		v ) set -ex ;;
-		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
-	esac
-done
+ARGUMENT_LIST=(
+	"workspace"
+	"git_branch"
+	"mrp_branch"
+	"node"
+	"method"
+	"test_type"
+)
+
+. files/scripts/argparse.sh
+
+if [ $help == True ]; then
+	echo $helpmsg
+	exit 0
+elif [ $verbose == True ]; then
+	set -ex
+fi
+
 if [ ! -n $WORKSPACE ] || [ ! -n $git_branch ] || [ ! -n $node ] || [ ! -n $method ] || [ ! -n $test_type ] || [ ! -n $mrp_branch ] || [ ! -n $git_branch]; then
 	echo "Missing Required Arguments !!!"
 	echo $helpmsg

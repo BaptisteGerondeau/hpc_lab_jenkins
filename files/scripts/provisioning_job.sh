@@ -1,30 +1,33 @@
 #!/bin/bash
 set -x
 
-helpmsg="provisioning_job.sh -w [WORKSPACE] -m [machine_name] -k [kernel_description] -i [initrd_description] -b [ansible_client_branch] -n [preseed_name] -t [preseed_type] -a [machine_arch] -s [machine_subarch] -o kernel_options -p kernel_path -y initrd_path -u preseed_path -v -h"
+helpmsg="provisioning_job.sh --workspace [WORKSPACE] --machine_name [machine_name] --kernel_desc [kernel_description] --initrd_desc [initrd_description] --branch [ansible_client_branch] --preseed_name [preseed_name] --preseed_type [preseed_type] --machine_arch [machine_arch] --machine_subarch [machine_subarch] --kernel_opts kernel_options --kernel_path kernel_path --initrd_path initrd_path --preseed_path preseed_path --verbose --help"
 
-while getopts "w:m:k:i:b:n:t:a:s:o:p:y:u:hv" flag ; do
-	case "$flag" in
-		w) WORKSPACE=$OPTARG;;
-		m) machine_name=$OPTARG;;
-		k) kernel_desc=$OPTARG;;
-		i) initrd_desc=$OPTARG;;
-		b) branch=$OPTARG;;
-		n) preseed_name=$OPTARG;;
-		t) preseed_type=$OPTARG;;
-		a) machine_arch=$OPTARG;;
-		s) machine_subarch=$OPTARG;;
-		o) kernel_opts=$OPTARG;;
-		p) kernel_path=$OPTARG;;
-		y) initrd_path=$OPTARG;;
-		u) preseed_path=$OPTARG;;
-		h ) echo $helpmsg
-		    exit 0
-		    ;;
-		v ) set -ex ;;
-		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
-	esac
-done
+ARGUMENT_LIST=(
+	"workspace"
+	"machine_name"
+	"kernel_desc"
+	"initrd_desc"
+	"branch"
+	"preseed_name"
+	"preseed_type"
+	"machine_arch"
+	"machine_subarch"
+	"kernel_opts"
+	"kernel_path"
+	"initrd_path"
+	"preseed_path"
+)
+
+. files/scripts/argparse.sh
+
+if [ $help == True ]; then
+	echo $helpmsg
+	exit 0
+elif [ $verbose == True ]; then
+	set -ex
+fi
+
 if [ ! -n $WORKSPACE ] || [ ! -n $machine_name ] || [ ! -n $kernel_desc ] || [ ! -n $initrd_desc ] || [ ! -n $branch ] || [ ! -n $preseed_name ] || [ ! -n $preseed_type ] || [ ! -n $machine_arch ] || [ ! -n $machine_subarch ]; then
 	echo "Missing Required Argument !!!"
 	echo $helpmsg

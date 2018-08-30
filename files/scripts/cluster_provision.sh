@@ -1,28 +1,30 @@
 #!/bin/bash
 set -x
 
-helpmsg="cluster_provision.sh -w [WORKSPACE] -t [machine_type] -g [scripts_branch] -v -h" 
+helpmsg="cluster_provision.sh --workspace [workspace] --machine_type [machine_type] --scripts_branch [scripts_branch] --v(erbose) --h(elp)" 
+ARGUMENT_LIST=(
+	"workspace"
+	"machine_type"
+	"scripts_branch"
+)
 
-while getopts "w:t:g:vh" flag ; do
-	case "$flag" in
-		w) WORKSPACE=$OPTARG;;
-		t) machine_type=$OPTARG;;
-		g) scripts_branch=$OPTARG;;
-		h ) echo $helpmsg
-		    exit 0
-		    ;;
-		v ) set -ex ;;
-		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
-	esac
-done
+. files/scripts/argparse.sh
 
-if [ ! -n $WORKSPACE ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ]; then
+if [ $help == True ]; then
+	echo $helpmsg
+	exit 0
+elif [ $verbose == True ]; then
+	set -ex
+fi
+
+
+if [ ! -n $workspace ] || [ ! -n $machine_type ] || [ ! -n $scripts_branch ]; then
 	echo "Missing Required Argument(s) !!!"
 	echo $helpmsg
 	exit 1
 fi
 
-if [ ! -d ${WORKSPACE} ]; then
+if [ ! -d ${workspace} ]; then
 	exit 2
 fi
 
@@ -44,7 +46,7 @@ elif [ ${machine_type} == "d05" ]; then
 fi
 
 # Build trigger machine_provision job
-cat << EOF > ${WORKSPACE}/machine_provision
+cat << EOF > ${workspace}/machine_provision
 scripts_branch=${scripts_branch}
 machine_list=${machine_list}
 machine_type=${machine_type}

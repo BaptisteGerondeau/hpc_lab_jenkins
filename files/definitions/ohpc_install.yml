@@ -70,4 +70,4 @@
                         fi 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git
 
-                        bash hpc_lab_setup/files/scripts/ohpc_install.sh -w "${WORKSPACE}" -g "${git_branch}" -p "${mrp_branch}" -n "${node}" -m  "${method}" -c "${slurmconf}" -v
+                        bash hpc_lab_setup/files/scripts/ohpc_install.sh --workspace "${WORKSPACE}" --git_branch "${git_branch}" --mrp_branch "${mrp_branch}" --node "${node}" --method "${method}" --slurmconf "${slurmconf}" --v

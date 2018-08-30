@@ -1,22 +1,26 @@
 #!/bin/bash
 set -x
 
-helpmsg="os_provision.sh -w [WORKSPACE] -s [scripts_branch] -m [machine_type] -j [job_type] -o [os_type] -h -v"
+helpmsg="os_provision.sh --workspace [WORKSPACE] --scripts_branch [scripts_branch] --machine_type [machine_type] --job_type [job_type] --os_type [os_type] --help --verbose"
 
-while getopts "w:s:m:j:o:hv" flag ; do
-	case "$flag" in
-		w) WORKSPACE=$OPTARG;;
-		s) scripts_branch=$OPTARG;;
-		m) machine_type=$OPTARG;;
-		j) job_type=$OPTARG;;
-		o) os_type=$OPTARG;;
-		h ) echo $helpmsg
-		    exit 0
-		    ;;
-		v ) set -ex ;;
-		* ) echo 'Illegal Argument' && echo $helpmsg && exit 42 ;;
-	esac
-done
+ARGUMENT_LIST=(
+	"workspace"
+	"scripts_branch"
+	"machine_type"
+	"job_type"
+	"os_type"
+)
+
+. files/scripts/argparse.sh
+
+if [ $help == True ]; then
+	echo $helpmsg
+	exit 0
+elif [ $verbose == True ]; then
+	set -ex
+fi
+
+
 if [ ! -n $WORKSPACE ] || [ ! -n $scripts_branch ] || [ ! -n $machine_type ] || [ ! -n $job_type ] || [ ! -n $os_type ]; then 
 	echo "Missing Required Arguments !!!"
 	echo $helpmsg
