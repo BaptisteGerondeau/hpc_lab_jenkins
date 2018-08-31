@@ -1,11 +1,12 @@
 #!/bin/bash
 set -ex
 
-helpmsg="benchmark_job.sh --workspace [WORKSPACE] --node [node] --compiler [compiler] --build-number [build_number] --git-branch [harness_gitbranch] --benchmark [benchmark_name] --compiler_flags compiler_flags --linker_flags linker_flags --harness_options harness_options --run_flags run_flags --iterations iterations --size size"
+helpmsg="benchmark_job.sh --workspace [WORKSPACE] --sftp_user [sftp_user] --node [node] --compiler [compiler] --build-number [build_number] --git-branch [harness_gitbranch] --benchmark [benchmark_name] --compiler_flags compiler_flags --linker_flags linker_flags --harness_options harness_options --run_flags run_flags --iterations iterations --size size"
 
 ARGUMENT_LIST=(
 	"workspace"
 	"node"
+	"sftp_user"
 	"compiler"
 	"build_number"
 	"harness_branch"
@@ -72,10 +73,10 @@ fi
 
 cat << EOF > benchmark_job.yml
 mr_provisioner_url: http://10.40.0.11:5000
-mr_provisioner_token: $(cat "/home/$(whoami)/mrp_token")
+mr_provisioner_token: $(cat "/home/${sftp_user}/mrp_token")
 mr_provisioner_machine_name: ${node_type}bench
 sftp_dirname: ${node_type}-${build_number}
-sftp_user: ${NODE_NAME}
+sftp_user: ${sftp_user}
 sftp_server_ip: 10.40.0.13
 sftp_path: ${vendor}/benchmark
 machine_type: ${machine_type}
