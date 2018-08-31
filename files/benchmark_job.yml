@@ -44,6 +44,10 @@
                          default: 'master'
                          description: 'The branch of the job logic to use'
                  - string:
+                         name: ansible_branch
+                         default: 'master'
+                         description: 'The branch of the ansible_deploy_harness to use'
+                 - string:
                          name: harness_branch
                          default: 'master'
                          description: 'The benchmark_harness branch to use'
@@ -94,6 +98,49 @@
                         if [ -d "${WORKSPACE}/hpc_lab_setup" ]; then
                                 rm -rf "${WORKSPACE}/hpc_lab_setup"
                         fi 
+
+                        case "${node}" in
+                        d03*)
+                            vendor='huawei'
+                            node_type=d03
+                            machine_type=aarch64
+                            ;;
+                        d05*)
+                            vendor='huawei'
+                            node_type=d05
+                            machine_type=aarch64
+                            ;;
+                        qdc*)
+                            vendor='qualcomm'
+                            node_type=qdc
+                            machine_type=aarch64
+                            ;;
+                        tx*)
+                            vendor='cavium'
+                            node_type=tx2
+                            machine_type=aarch64
+                            ;;
+                        x86_64*)
+                            vendor='intel'
+                            node_type=x86
+                            machine_type=x86_64
+                            ;;
+                        *)
+                            echo "Unknown node type : ${node} , Exiting..."
+                            exit 2
+                            ;;
+                        esac
+
+                        mrp_token = $(cat "/home/${sftp_user}/mrp_token")
+                        root_dir="$(realpath $(dirname $0))"
+                        sftp_server_ip="10.40.0.13"
+
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
 
-                        bash "${WORKSPACE}/hpc_lab_setup/files/scripts/benchmark_job.sh" --workspace "${WORKSPACE}" --node "${node}" --sftp_user "${NODE_NAME}" --compiler "${compiler}" --build_number "${BUILD_NUMBER}" --harness_branch "${harness_branch}" --benchmark "${benchmark}" --compiler_flags "${compiler_flags}" --linker_flags "${linker_flags}" --harness_options "${harness_options}" --run_flags "${run_flags}" --size "${size}" --iterations "${iterations}"
+                        if [[ ${compiler} = *"http://"* ]] || [[ ${compiler} = *"ftp://"* ]]; then
+                                ${root_dir}/tarball_cacher.py ${compiler} /tmp/ --upload=sftp://${sftp_server_ip}/toolchains
+                                file=$(basename ${compiler})
+                                compiler="http://${sftp_server_ip}/toolchains/${file}"
+                        fi
+
+                        bash "${WORKSPACE}/hpc_lab_setup/files/scripts/benchmark_job.sh" --workspace "${WORKSPACE}" --node_type "${node_type}" --machine_type "${machine_type}" --sftp_path "${sftp_path}" --sftp_server_ip "${sftp_server_ip}" --sftp_user "${NODE_NAME}" --compiler "${compiler}" --build_number "${BUILD_NUMBER}" --ansible_branch "${ansible_branch}" --harness_branch "${harness_branch}" --benchmark "${benchmark}" --compiler_flags "${compiler_flags}" --linker_flags "${linker_flags}" --harness_options "${harness_options}" --run_flags "${run_flags}" --size "${size}" --iterations "${iterations}" --mrp_url "http://10.40.0.11:5000" --node_name "${node_type}bench" --mrp_token "${mrp_token}"
