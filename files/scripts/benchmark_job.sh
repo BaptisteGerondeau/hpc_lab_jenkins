@@ -80,7 +80,7 @@ sftp_user: ${sftp_user}
 sftp_server_ip: 10.40.0.13
 sftp_path: ${vendor}/benchmark
 machine_type: ${machine_type}
-branch: ${harness_branch}
+branch: master
 benchmark: ${benchmark}
 size: ${size}
 iterations: ${iterations}
