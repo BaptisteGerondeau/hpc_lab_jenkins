@@ -61,15 +61,9 @@ run_flags: ${run_flags}
 harness_options: ${harness_options}
 EOF
 
-if [ -d "${workspace}/ansible-deploy-benchmarks" ]; then
-    rm -rf "${workspace}/ansible-deploy-benchmarks"
-fi
-
-git clone -b ${ansible_branch} https://github.com/Linaro/ansible-deploy-benchmarks.git "${workspace}/ansible-deploy-benchmarks"
-
 eval `ssh-agent`
 ssh-add
 
-ANSIBLE_CONFIG="${workspace}/ansible-deploy-benchmarks/ansible.cfg" ansible-playbook -v "${workspace}/ansible-deploy-benchmarks/deploy_benchmarks.yml" --extra-vars="@${workspace}/benchmark_job.yml"
+ANSIBLE_CONFIG="${workspace}/hpc_lab_setup/files/ansible/deploy_harness/ansible.cfg" ansible-playbook -v "${workspace}/hpc_lab_setup/files/ansible/deploy_harness/deploy_benchmarks.yml" --extra-vars="@${workspace}/benchmark_job.yml"
 
 ssh-agent -k

@@ -131,9 +131,11 @@
                             ;;
                         esac
 
-                        mrp_token = $(cat "/home/${sftp_user}/mrp_token")
                         root_dir="$(realpath $(dirname $0))"
+                        sftp_user=${NODE_NAME}
                         sftp_server_ip="10.40.0.13"
+                        sftp_path="${vendor}/benchmark"
+                        mrp_token=$(cat "/home/${sftp_user}/mrp_token")
 
                         git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
 
