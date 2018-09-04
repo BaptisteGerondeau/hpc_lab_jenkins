@@ -1,0 +1,34 @@
+---
+- include_tasks: ./tasks/debian_deps.yml
+  when: ansible_distribution == "Debian"
+
+- include_tasks: ./tasks/centos_deps.yml
+  when: ansible_distribution == "CentOS"
+
+- include_tasks: ./tasks/opensuse_deps.yml
+  when: ansible_distribution == "OpenSUSE"
+
+- name: Wipe harness directory
+  file:
+      path: "benchmark_harness"
+      state: "{{ item }}"
+  with_items:
+      - absent
+      - directory
+
+- name: Get the benchmark_harness
+  git:
+      repo: https://github.com/Linaro/benchmark_harness.git
+      dest: benchmark_harness
+      version: "{{ branch | default('master') }}"
+
+- name: Install pip requirements
+  shell: python3 -m pip install -r ./benchmark_harness/requirements.txt
+
+- name: Wipe results directory
+  file:
+      path: "results"
+      state: "{{ item }}"
+  with_items:
+      - absent
+      - directory

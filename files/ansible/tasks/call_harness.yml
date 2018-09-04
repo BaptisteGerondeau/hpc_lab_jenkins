@@ -1,0 +1,5 @@
+---
+- name: Call the benchmark_harness
+  shell: './benchmark_harness/benchmark_controller.py {{benchmark|default("") }} "--machine_type={{machine_type|default("") }}" "--toolchain={{compiler|default("") }}" "--compiler-flags={{compiler_flags|default("") }}" "--linker-flags={{linker_flags|default("") }}" "--run-flags={{run_flags|default("") }}" "--size={{size|default("") }}" "--iterations={{iterations|default("") }}" "--benchmark-root="results"" {{ harness_options|default("") }}'
+  register: benchmark_call_output
+- debug: var=benchmark_call_output.stderr_lines

@@ -9,9 +9,5 @@
     - git
     - build-essential
     - linux-perf
-    - linux-reference-perf
     - unzip
     - lhasa
-
-- name: Set perf CAP_SYS_ADMIN level to 2
-  shell: echo '2' | tee  /proc/sys/kernel/perf_event_paranoid  
