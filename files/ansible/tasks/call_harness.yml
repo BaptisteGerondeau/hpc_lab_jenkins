@@ -2,8 +2,43 @@
 - name: Set CAP_SYS_ADMIN to 2
   shell: echo '2' | tee /proc/sys/kernel/perf_event_paranoid
 
-
 - name: Call the benchmark_harness
   shell: './benchmark_harness/benchmark_controller.py {{benchmark|default("") }} "--machine_type={{machine_type|default("") }}" "--toolchain={{compiler|default("") }}" "--compiler-flags={{compiler_flags|default("") }}" "--linker-flags={{linker_flags|default("") }}" "--run-flags={{run_flags|default("") }}" "--size={{size|default("") }}" "--iterations={{iterations|default("") }}" "--benchmark-root="results"" {{ harness_options|default("") }}'
   register: benchmark_call_output
 - debug: var=benchmark_call_output.stderr_lines
+
+- name: Find where the harness put the results
+  find:
+    paths: "results"
+    patterns: '{{ benchmark }}*'
+    file_type: directory
+  register: benchresults_path
+- debug: var=benchresults_path.files
+
+- name: Find results
+  find:
+    paths: "{{ item.path }}/results/"
+    patterns: "^.*?\\.(?:err|out)$"
+    use_regex: yes
+  with_items: "{{ benchresults_path.files }}"
+  register: reports_path
+  failed_when: reports_path.matched == 0
+- debug: var=reports_path
+
+- name: Make a directory with a nice name for sftp
+  file:
+    path: "results/{{ sftp_dirname }}"
+    state: directory
+
+- name: Copy results
+  copy:
+    src: "{{ item.path }}"
+    dest: "results/{{ sftp_dirname}}/{{ item.path | basename }}"
+    remote_src: yes
+  with_items: "{{ reports_path.results[0].files }}"
+
+- include_tasks: ./tasks/put_sftp.yml
+  vars:
+    dirs_to_sftp: "results/{{ sftp_dirname }}"
+
+- include_tasks: ./tasks/harness_cleanup.yml

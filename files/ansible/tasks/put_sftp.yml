@@ -1,0 +1,5 @@
+---
+- name: Copy results to fileserver
+  shell: (echo "put -r {{ item }}" && echo "exit") | sftp -o ForwardAgent=yes -o ConnectTimeout=60 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no  {{sftp_user}}@{{ sftp_server_ip }}:/{{ sftp_path }}
+  with_items:
+    - "{{ dirs_to_sftp }}"

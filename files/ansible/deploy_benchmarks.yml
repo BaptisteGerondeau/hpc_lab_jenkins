@@ -4,5 +4,3 @@
     - include_tasks: ./tasks/prepare.yml
 
     - include_tasks: ./tasks/call_harness.yml
-
-    - include_tasks: ./tasks/sftp_results.yml

@@ -169,5 +169,5 @@
                         fi
                         git clone -b ${script_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
 
-                        ansible-playbook "${WORKSPACE}/hpc_lab_setup/files/ansible/deploy_benchmarks.yml" -i "${WORKSPACE}/hosts"  --extra-vars="@../benchmark_job.yml"
+                        ANSIBLE_CONFIG="${WORKSPACE}/hpc_lab_setup/files/ansible/ansible.cfg" ansible-playbook -v -u root "${WORKSPACE}/hpc_lab_setup/files/ansible/deploy_benchmarks.yml" -i "${WORKSPACE}/hosts"  --extra-vars="@${WORKSPACE}/benchmark_job.yml"
                         ssh-agent -k 
