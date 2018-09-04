@@ -1,0 +1,107 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Checkout provisioner client
+      git:
+        repo: https://github.com/Linaro/mr-provisioner-client
+        dest: mr-provisioner-client
+
+    - name: Retrieve IP of Machine from MrP
+      shell: "./mr-provisioner-client/mrp_client.py getip \
+                              {{ mr_provisioner_machine_name }} \
+                              --mrp-url={{ mr_provisioner_url }} \
+                              --mrp-token={{mr_provisioner_token}}"
+      register: ip
+
+    - name: Add machine to hosts as target
+      add_host:
+              name: "{{ ip.stdout }}"
+              groups: target
+              ansible_user: root
+              ansible_ssh_extra_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+      when: ip is defined and ip != ""
+
+- hosts: target
+  tasks:
+    - include_tasks: ./tasks/debian_deps.yml
+      when: ansible_distribution == "Debian"
+
+    - include_tasks: ./tasks/centos_deps.yml
+      when: ansible_distribution == "CentOS"
+
+    - include_tasks: ./tasks/opensuse_deps.yml
+      when: ansible_distribution == "OpenSUSE"
+
+    - name: Wipe harness directory
+      file:
+          path: "benchmark_harness"
+          state: "{{ item }}"
+      with_items:
+          - absent
+          - directory
+
+    - name: Get the benchmark_harness
+      git:
+          repo: https://github.com/Linaro/benchmark_harness.git
+          dest: benchmark_harness
+          version: "{{ branch | default('master') }}"
+
+    - name: Install pip requirements
+      shell: python3 -m pip install -r ./benchmark_harness/requirements.txt
+
+    - name: Wipe results directory
+      file:
+          path: "results"
+          state: "{{ item }}"
+      with_items:
+          - absent
+          - directory
+
+    - name: Call the benchmark_harness
+      shell: './benchmark_harness/benchmark_controller.py {{benchmark|default("") }} "--machine_type={{machine_type|default("") }}" "--toolchain={{compiler|default("") }}" "--compiler-flags={{compiler_flags|default("") }}" "--linker-flags={{linker_flags|default("") }}" "--run-flags={{run_flags|default("") }}" "--size={{size|default("") }}" "--iterations={{iterations|default("") }}" "--benchmark-root="results"" {{ harness_options|default("") }}'
+      register: benchmark_call_output
+    - debug: var=benchmark_call_output.stderr_lines
+
+    - name: Find where the harness put the results
+      find:
+        paths: "results"
+        patterns: '{{ benchmark }}*'
+        file_type: directory
+      register: benchresults_path
+    - debug: var=benchresults_path.files
+
+    - name: Find results
+      find:
+        paths: "{{ item.path }}/results/"
+        patterns: "^.*?\\.(?:err|out)$"
+        use_regex: yes
+      with_items: "{{ benchresults_path.files }}"
+      register: reports_path
+      failed_when: reports_path.matched == 0
+    - debug: var=reports_path
+
+    - name: Make a directory with a nice name for sftp
+      file:
+        path: "results/{{ sftp_dirname }}"
+        state: directory
+
+    - name: Copy results
+      copy:
+        src: "{{ item.path }}"
+        dest: "results/{{ sftp_dirname}}/{{ item.path | basename }}"
+        remote_src: yes
+      with_items: "{{ reports_path.results[0].files }}"
+
+    - name: Copy results to fileserver
+      shell: (echo "put -r results/{{ sftp_dirname }}" && echo "exit") | sftp -o ForwardAgent=yes -o ConnectTimeout=60 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no  {{sftp_user}}@{{ sftp_server_ip }}:/{{ sftp_path }}
+
+    - name: Remove the old dir
+      file: 
+        state: absent
+        path: "{{ item.path }}/"
+      with_items: "{{ benchresults_path.files }}"
+
+    - name: Remove the nicely named sftp dir
+      file:
+        state: absent
+        path: "results/{{ sftp_dirname }}/"
