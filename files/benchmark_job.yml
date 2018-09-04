@@ -43,6 +43,10 @@
                          name: branch
                          default: 'master'
                          description: 'The benchmark_harness branch to use'
+                 - string:
+                         name: script_branch
+                         default: 'master'
+                         description: 'The hpc_lab_setup branch to use'
                  - choice:
                          name: benchmark
                          choices:
@@ -124,10 +128,26 @@
                                 compiler="http://10.40.0.13/toolchains/${file}"
                         fi
 
+                        if [ -d "${WORKSPACE}/mr-provisioner-client" ]; then
+                            rm -rf "${WORKSPACE}/mr-provisioner-client"
+                        fi
+                        git clone https://github.com/Linaro/mr-provisioner-client.git "${WORKSPACE}/mr-provisioner-client"
+
+                        mr_provisioner_url="http://10.40.0.11:5000"
+                        mr_provisioner_token=$(cat "/home/${NODE_NAME}/mrp_token")
+                        mr_provisioner_machine_name="${node_type}bench"
+
+                        machine_ip=$( "${WORKSPACE}/mr-provisioner-client/mrp_client.py" getip ${mr_provisioner_machine_name} --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
+
+                        cat << EOF > "${WORKSPACE}/hosts"
+                        [target]
+                        ${machine_ip}
+                        EOF
+
                         cat << EOF > benchmark_job.yml
-                        mr_provisioner_url: http://10.40.0.11:5000
-                        mr_provisioner_token: $(cat "/home/${NODE_NAME}/mrp_token")
-                        mr_provisioner_machine_name: ${node_type}bench
+                        mr_provisioner_url: ${mr_provisioner_url}
+                        mr_provisioner_token: "${mr_provisioner_token}"
+                        mr_provisioner_machine_name: "${mr_provisioner_machine_name}"
                         sftp_dirname: ${node_type}-${BUILD_NUMBER}
                         sftp_user: ${NODE_NAME}
                         sftp_server_ip: 10.40.0.13
@@ -144,10 +164,10 @@
                         harness_options: ${harness_options}
                         EOF
 
-                        if [ -d ansible-deploy-benchmarks ]; then
-                            rm -rf ansible-deploy-benchmarks
+                        if [ -d "${WORKSPACE}/hpc_lab_setup" ]; then
+                            rm -rf "${WORKSPACE}/hpc_lab_setup"
                         fi
-                        git clone -b ${branch} https://github.com/Linaro/ansible-deploy-benchmarks.git
-                        cd ansible-deploy-benchmarks
-                        ansible-playbook deploy_benchmarks.yml --extra-vars="@../benchmark_job.yml"
+                        git clone -b ${script_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
+
+                        ansible-playbook "${WORKSPACE}/hpc_lab_setup/files/ansible/deploy_benchmarks.yml" -i "${WORKSPACE}/hosts"  --extra-vars="@../benchmark_job.yml"
                         ssh-agent -k 
