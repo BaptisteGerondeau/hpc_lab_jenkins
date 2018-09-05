@@ -1,9 +1,11 @@
 ---
 - hosts: target
   tasks:
-        - include_tasks: ./tasks/install_packages.yml
-          vars:
-            packages_to_install:
+        - name: Install dependencies on any Linux system
+          package:
+            name: "{{ item }}"
+            state: present
+          with_items:
               - python3
               - python3-pip
               - git
@@ -39,47 +41,16 @@
 
         - include_tasks: ./tasks/call_harness.yml
 
-        - name: Find where the harness put the results
-          find:
-            paths: "results"
-            patterns: '{{ benchmark }}*'
-            file_type: directory
-          register: benchresults_path
-        - debug: var=benchresults_path.files
-
         - name: Find results
           find:
-            paths: "{{ item.path }}/results/"
+            paths: "results/"
             patterns: "^.*?\\.(?:err|out)$"
             use_regex: yes
-          with_items: "{{ benchresults_path.files }}"
+            recurse: yes
           register: reports_path
           failed_when: reports_path.matched == 0
         - debug: var=reports_path
 
-        - name: Make a directory with a nice name for sftp
-          file:
-            path: "results/{{ sftp_dirname }}"
-            state: directory
-
-        - name: Copy results
-          copy:
-            src: "{{ item.path }}"
-            dest: "results/{{ sftp_dirname}}/{{ item.path | basename }}"
-            remote_src: yes
-          with_items: "{{ reports_path.results[0].files }}"
-
         - include_tasks: ./tasks/put_sftp.yml
           vars:
-            dirs_to_sftp: "results/{{ sftp_dirname }}"
-
-        - name: Remove the old dir
-          file: 
-            state: absent
-            path: "{{ item.path }}/"
-          with_items: "{{ benchresults_path.files }}"
-
-        - name: Remove the nicely named sftp dir
-          file:
-            state: absent
-            path: "results/{{ sftp_dirname }}/"
+            files_to_sftp: "{{ reports_path.files }}"
