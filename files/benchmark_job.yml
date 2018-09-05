@@ -1,4 +1,4 @@
- - job:
+- job:
          name: benchmark_job
          description: "This is a job to run a benchmark on a machine"
          project-type: freestyle
@@ -40,11 +40,11 @@
                          ignore-offline-nodes: true
                          description: 'Node with which to run the benchmark on the machine'
                  - string:
-                         name: branch
+                         name: harness_branch
                          default: 'master'
                          description: 'The benchmark_harness branch to use'
                  - string:
-                         name: script_branch
+                         name: scripts_branch
                          default: 'master'
                          description: 'The hpc_lab_setup branch to use'
                  - choice:
@@ -90,11 +90,12 @@
                  - shell: |
                         #!/bin/bash
                         set -ex
-                        cd ${WORKSPACE}
-                        eval `ssh-agent`
-                        ssh-add
 
-                        case ${node} in
+                        if [ -d "${WORKSPACE}/hpc_lab_setup" ]; then
+                                rm -rf "${WORKSPACE}/hpc_lab_setup"
+                        fi 
+
+                        case "${node}" in
                         d03*)
                             vendor='huawei'
                             node_type=d03
@@ -120,12 +121,22 @@
                             node_type=x86
                             machine_type=x86_64
                             ;;
+                        *)
+                            echo "Unknown node type : ${node} , Exiting..."
+                            exit 2
+                            ;;
                         esac
 
+                        root_dir="$(realpath $(dirname $0))"
+                        sftp_server_ip="10.40.0.13"
+                        sftp_path="${vendor}/benchmark"
+
+                        git clone -b ${scripts_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
+
                         if [[ ${compiler} = *"http://"* ]] || [[ ${compiler} = *"ftp://"* ]]; then
-                                ${JENKINS_HOME}/scripts/tarball_cacher.py ${compiler} /tmp/ --upload=sftp://10.40.0.13/toolchains
+                                ${root_dir}/tarball_cacher.py ${compiler} /tmp/ --upload=sftp://${sftp_server_ip}/toolchains
                                 file=$(basename ${compiler})
-                                compiler="http://10.40.0.13/toolchains/${file}"
+                                compiler="http://${sftp_server_ip}/toolchains/${file}"
                         fi
 
                         if [ -d "${WORKSPACE}/mr-provisioner-client" ]; then
@@ -139,35 +150,4 @@
 
                         machine_ip=$( "${WORKSPACE}/mr-provisioner-client/mrp_client.py" getip ${mr_provisioner_machine_name} --mrp-url=${mr_provisioner_url} --mrp-token=${mr_provisioner_token})
 
-                        cat << EOF > "${WORKSPACE}/hosts"
-                        [target]
-                        ${machine_ip}
-                        EOF
-
-                        cat << EOF > benchmark_job.yml
-                        mr_provisioner_url: ${mr_provisioner_url}
-                        mr_provisioner_token: "${mr_provisioner_token}"
-                        mr_provisioner_machine_name: "${mr_provisioner_machine_name}"
-                        sftp_dirname: ${node_type}-${BUILD_NUMBER}
-                        sftp_user: ${NODE_NAME}
-                        sftp_server_ip: 10.40.0.13
-                        sftp_path: ${vendor}/benchmark
-                        machine_type: ${machine_type}
-                        branch: ${branch}
-                        benchmark: ${benchmark}
-                        size: ${size}
-                        iterations: ${iterations}
-                        compiler: ${compiler}
-                        compiler_flags: ${compiler_flags}
-                        linker_flags: ${linker_flags}
-                        run_flags: ${run_flags}
-                        harness_options: ${harness_options}
-                        EOF
-
-                        if [ -d "${WORKSPACE}/hpc_lab_setup" ]; then
-                            rm -rf "${WORKSPACE}/hpc_lab_setup"
-                        fi
-                        git clone -b ${script_branch} https://github.com/Linaro/hpc_lab_setup.git "${WORKSPACE}/hpc_lab_setup"
-
-                        ANSIBLE_CONFIG="${WORKSPACE}/hpc_lab_setup/files/ansible/ansible.cfg" ansible-playbook -v -u root "${WORKSPACE}/hpc_lab_setup/files/ansible/deploy_benchmarks.yml" -i "${WORKSPACE}/hosts"  --extra-vars="@${WORKSPACE}/benchmark_job.yml"
-                        ssh-agent -k 
+                        bash "${WORKSPACE}/hpc_lab_setup/files/scripts/benchmark_job.sh" --workspace "${WORKSPACE}" --node_type "${node_type}" --machine_type "${machine_type}" --machine_ip "${machine_ip}" --sftp_path "${sftp_path}" --sftp_server_ip "${sftp_server_ip}" --sftp_user "${NODE_NAME}" --compiler "${compiler}" --build_number "${BUILD_NUMBER}" --ansible_branch "${ansible_branch}" --harness_branch "${harness_branch}" --benchmark "${benchmark}" --compiler_flags "${compiler_flags}" --linker_flags "${linker_flags}" --harness_options "${harness_options}" --run_flags "${run_flags}" --size "${size}" --iterations "${iterations}"
