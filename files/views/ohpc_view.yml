@@ -6,7 +6,6 @@
         filter-executors: true
         filter-queue: true
         job-name:
-            - cluster_provision
             - ohpc_install
             - ohpc_test_suite
         columns:
