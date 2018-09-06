@@ -1,6 +1,6 @@
 ---
 - view:
-        name: OpenHPC 
+        name: OpenHPC
         view-type: list
         description: "This page allows you to select which OpenHPC-related job to run on the HPC Lab's clusters  "
         filter-executors: true
