@@ -1,6 +1,6 @@
 ---
 - view:
-        name: Provisioning 
+        name: Provisioning
         view-type: list
         description: "This page allows you to select which of the HPC Lab's machine/cluster you want to provision  "
         filter-executors: true
