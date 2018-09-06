@@ -1,6 +1,6 @@
 ---
 - view:
-        name: Benchmarks 
+        name: Benchmarks
         view-type: list
         description: "This page allows you to select which benchmark job to run on the HPC Lab's servers  "
         filter-executors: true
