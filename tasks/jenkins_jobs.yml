@@ -8,7 +8,6 @@
       dest: "/var/lib/jenkins/scripts/"
   with_items:
           - provisioning_job
-          - machine_provision
           - os_provision
           - benchmark_job
           - ohpc_install
@@ -28,7 +27,6 @@
   shell: "jenkins-jobs update /var/lib/jenkins/scripts/{{ item }}.yml"
   with_items:
           - provisioning_job
-          - machine_provision
           - os_provision
           - benchmark_job
           - ohpc_install
