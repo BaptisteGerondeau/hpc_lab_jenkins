@@ -35,7 +35,6 @@
                          choices:
                                  - d05
                                  - qdc
-                         default: 'qdc'
                          description: 'The cluster of machines to be provisioned'
                  - string:
                          name: client_branch
@@ -51,34 +50,30 @@
                         set -ex
 
                         if [ ${machine_type} == "qdc" ]; then
-                                machine_list="qdcohpc, qdc01, qdc02, qdc03"
+                                machine_subarch=GrubWithOptionEfiboot
+                                machine_name="qdcohpc,qdc01,qdc02,qdc03"
                                 preseed_type="kickstart"
                                 kernel_desc="CentOS 7.5"
                                 initrd_desc="CentOS 7.5"
                                 preseed_name="CentOS Upstream"
-                                kernel_opts="ip=dhcp text inst.stage2=http://mirror.centos.org/altarch/7/os/aarch64/ inst.repo=http://mirror.centos.org/altarch/7/os/aarch64/ inst.ks=file:/ks.cfg"
+                                stagetwo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
+                                repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
                         elif [ ${machine_type} == "d05" ]; then
-                                machine_list="d05ohpc, d0301, d0302, d0303"
+                                machine_subarch=Grub
+                                machine_name="d05ohpc,d0301,d0302,d0303"
                                 preseed_type="kickstart"
                                 kernel_desc="CentOS ERP 18.06"
                                 initrd_desc="CentOS ERP 18.06"
                                 preseed_name="CentOS"
-                                kernel_opts="ip=dhcp text inst.stage2=http://releases.linaro.org/reference-platform/enterprise/18.06/centos-installer/ inst.repo=http://mirror.centos.org/altarch/7/os/aarch64/ inst.ks=file:/ks.cfg"
+                                stagetwo="http://10.40.0.13/releases.linaro.org/reference-platform/enterprise/18.06/centos-installer/"
+                                repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
                         fi
 
                         # Defaults
-                        machine_list="$( echo "$machine_list"| tr -d '[:space:]')"
-                        machine_name=${machine_list}
                         machine_arch=AArch64
-                        machine_subarch=Grub
                         job_type=ohpc
 
-                        kernel_opts="${kernel_opts} earlycon console=ttyAMA0,115200"
-
-                        # Special cases
-                        if [ "${machine_type}" == "qdc" ]; then
-                            machine_subarch=GrubWithOptionEfiboot
-                        fi
+                        kernel_opts="ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg earlycon console=ttyAMA0,115200"
 
                         # Build trigger file
                         cat << EOF > ${WORKSPACE}/mrp_provision

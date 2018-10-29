@@ -36,15 +36,14 @@
                                  - d03
                                  - d05
                                  - qdc
-                         default: 'd03'
-                         description: 'The MrP type of the machine to be provisioned'
+                         description: 'Micro-architecture of the machine to be provisioned'
                  - choice:
                          name: job_type
                          choices:
                                  - bench
                                  - ohpc
                          default: 'bench'
-                         description: 'The job type you will execute on the machine'
+                         description: 'The job type to be executed on the machine'
                  - choice:
                          name: os_type
                          choices:
@@ -53,11 +52,11 @@
                                  - centos
                                  - centos-upstream
                          default: 'default'
-                         description: 'The OS distro. Default: Debian for benchmark, CentOS for openhpc'
+                         description: 'The OS distribution. Default: Debian for benchmark, CentOS for openhpc'
                  - string:
                          name: client_branch
                          default: 'master'
-                         description: 'The branch of the mrp client to use'
+                         description: 'The branch of the MrP client to use'
                  - string:
                          name: automation_branch
                          default: 'master'
