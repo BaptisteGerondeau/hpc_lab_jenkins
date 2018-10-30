@@ -58,6 +58,8 @@
                                 preseed_name="CentOS Upstream"
                                 stagetwo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
                                 repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
+                                qdc="earlycon console=ttyAMA0,115200"
+                                special=(${qdcspecial} ${qdcspecial} ${qdcspecial} ${qdcspecial})
                         elif [ ${machine_type} == "d05" ]; then
                                 machine_subarch=Grub
                                 machine_name="d05ohpc,d0301,d0302,d0303"
@@ -67,13 +69,24 @@
                                 preseed_name="CentOS"
                                 stagetwo="http://10.40.0.13/releases.linaro.org/reference-platform/enterprise/18.06/centos-installer/"
                                 repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
+                                d05="modprobe.blacklist=hibmc_drm earlycon console=ttyAMA0,115200"
+                                d03="modprobe.blacklist=hibmc_drm earlycon console=ttyS0,115200"
+                                special=(${d05special} ${d03special} ${d03special} ${d03special})
                         fi
 
                         # Defaults
                         machine_arch=AArch64
                         job_type=ohpc
 
-                        kernel_opts="ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg earlycon console=ttyAMA0,115200"
+                        kernel_opts=""
+                        for i in ${special[@]}
+                        do
+                                if [ "x${kernel_opts}" == "x" ]; then
+                                        kernel_opts="ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg $i"
+                                else
+                                        kernel_opts="${kernel_opts};ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg $i"
+                                fi
+                        done
 
                         # Build trigger file
                         cat << EOF > ${WORKSPACE}/mrp_provision
