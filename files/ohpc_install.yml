@@ -59,6 +59,7 @@
                         arch='aarch64'
                         mr_provisioner_url='http://10.40.0.11:5000'
                         mr_provisioner_token=$(cat "/home/${NODE_NAME}/mrp_token")
+                        force_service=True
 
                         if [ ${node} == 'qdcohpc' ]; then
                                 master_name='qdcohpc'
@@ -158,6 +159,7 @@
                         internal_domain_name_servers: ${internal_dns}
                         eth_provision: ${eth_provision}
                         cnode_eth_internal: ${eth_provision}
+                        force_service: ${force_service}
                         enable_beegfs_client: ${enable_beegfs_client}
                         enable_mpi_defaults: ${enable_mpi_defaults} 
                         enable_mpi_opa: ${enable_mpi_opa}
