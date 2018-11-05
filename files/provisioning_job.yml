@@ -113,7 +113,6 @@
                          preseed_name: ${preseed_name}
                          arch: ${machine_arch}
                          subarch: ${machine_subarch}
-                         kernel_opts: ${kernel_opts}
                          machines:
                          $(for i in "${!mlist[@]}"; do echo -e "- name: ${mlist[$i]}\n  kernel_opts: ${kopts_list[$i]}"; done)
                          EOF

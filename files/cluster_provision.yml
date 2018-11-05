@@ -48,6 +48,8 @@
                  - shell: |
                         #!/bin/bash
                         set -ex
+                        old_ifs=${IFS}
+                        IFS=""
 
                         if [ ${machine_type} == "qdc" ]; then
                                 machine_subarch=GrubWithOptionEfiboot
@@ -59,7 +61,7 @@
                                 stagetwo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
                                 repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
                                 qdc="earlycon console=ttyAMA0,115200"
-                                special=(${qdcspecial} ${qdcspecial} ${qdcspecial} ${qdcspecial})
+                                special=(${qdc} ${qdc} ${qdc} ${qdc})
                         elif [ ${machine_type} == "d05" ]; then
                                 machine_subarch=Grub
                                 machine_name="d05ohpc,d0301,d0302,d0303"
@@ -71,7 +73,7 @@
                                 repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
                                 d05="modprobe.blacklist=hibmc_drm earlycon console=ttyAMA0,115200"
                                 d03="modprobe.blacklist=hibmc_drm earlycon console=ttyS0,115200"
-                                special=(${d05special} ${d03special} ${d03special} ${d03special})
+                                special=(${d05} ${d03} ${d03} ${d03})
                         fi
 
                         # Defaults
@@ -79,14 +81,16 @@
                         job_type=ohpc
 
                         kernel_opts=""
-                        for i in ${special[@]}
+                        for ((i = 0; i < ${#special[@]}; i++))
                         do
-                                if [ "x${kernel_opts}" == "x" ]; then
-                                        kernel_opts="ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg $i"
+                                if [ -z "${kernel_opts}" ]; then
+                                        kernel_opts="ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg ${special[i]}"
                                 else
-                                        kernel_opts="${kernel_opts};ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg $i"
+                                        kernel_opts="${kernel_opts};ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg ${special[i]}"
                                 fi
                         done
+
+                        IFS=${old_ifs}
 
                         # Build trigger file
                         cat << EOF > ${WORKSPACE}/mrp_provision
