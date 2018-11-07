@@ -8,4 +8,4 @@ users:
       group: huawei
     - name: test_c
       ssh_key: "{{ test_ssh_key }}"
-      group: cavium
+      group: staging

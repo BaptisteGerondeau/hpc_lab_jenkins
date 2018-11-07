@@ -1,7 +1,7 @@
 ---
 jslave_list:
-- "d03ohpc"
-- "d03bench"
+- "vmohpc"
+- "vmbench"
 - "d05ohpc"
 - "d05bench"
 - "tx2ohpc"

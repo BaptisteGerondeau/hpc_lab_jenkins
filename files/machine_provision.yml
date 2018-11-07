@@ -33,7 +33,7 @@
                  - choice:
                          name: machine_type
                          choices:
-                                 - d03
+                                 - vm
                                  - d05
                                  - qdf
                          description: 'Micro-architecture of the machine to be provisioned'
