@@ -75,7 +75,7 @@
                                 tx2="earlycon console=tty0"
                                 special=(${tx2} ${tx2} ${tx2})
                         elif [ ${machine_type} == "d05" ]; then
-                                machine_subarch=Grub
+                                machine_subarch=GrubWithOptionEfiboot
                                 machine_name="d05ohpc,d0501,d0502,d0503"
                                 preseed_type="kickstart"
                                 kernel_desc="CentOS 7.5"

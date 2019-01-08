@@ -106,7 +106,7 @@
                         # Defaults
                         machine_name="${machine_type}${job_type}"
                         machine_arch=AArch64
-                        machine_subarch=Grub
+                        machine_subarch=GrubWithOptionEfiboot
 
                         # Special cases
                         if [ "${machine_type}" == "d03" ]; then
@@ -115,10 +115,6 @@
                             kernel_opts="${kernel_opts} earlycon console=tty0"
                         else
                             kernel_opts="${kernel_opts} earlycon console=ttyAMA0,115200"
-                        fi
-
-                        if [ "${machine_type}" == "qdf" ] || [ "${machine_type}" == "tx2" ]; then
-                            machine_subarch=GrubWithOptionEfiboot
                         fi
 
                         # Build trigger file
