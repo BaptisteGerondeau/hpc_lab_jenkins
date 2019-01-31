@@ -51,6 +51,13 @@
                                  - short
                          default: 'short'
                          description: 'The length of the tests' 
+                 - choice:
+                         name: fabric_type
+                         choices:
+                                 - none
+                                 - infiniband
+                         default: 'none'
+                         description: 'The fabric type to be used in the test suite' 
                  - string:
                          name: client_branch
                          default: 'master'
@@ -125,6 +132,7 @@
                         enable_junit: True
                         num_computes: ${num_compute}
                         compute_regex: ${compute_regex}
+                        fabric_type: ${fabric_type}
                         configure_packages:
                           - name: long
                             status: ${long}
