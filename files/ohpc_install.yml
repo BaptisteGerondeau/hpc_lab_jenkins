@@ -45,6 +45,14 @@
                                  - stateful
                          default: 'stateful'
                          description: 'The type of OHPC install to do'
+                 - choice:
+                         name: ib_install
+                         choices:
+                                 - none
+                                 - foss
+                                 - mofed
+                         default: 'none'
+                         description: 'The type of OFED to install for Infiniband support'
                  - string:
                          name: client_branch
                          default: 'master'
@@ -98,10 +106,26 @@
                                 enable_nfs_ohpc=True
                                 enable_nfs_home=True
                                 enable_helloworld=True
+                                enable_socket_direct=False
+                                mofed_install_opts=""
 
                         else
                                 echo 'Stateless not implemented'
                                 exit 1
+                        fi
+
+                        if [ ${ib_install} == 'mofed' ]; then
+                            enable_opensm=False
+                            enable_ipoib=True
+                            enable_ifup=True
+                            enable_linux_ib=False
+                            enable_mellanox_ib=True
+                        elif [ ${ib_install} == 'foss' ]; then
+                            enable_opensm=False
+                            enable_ipoib=True
+                            enable_ifup=True
+                            enable_linux_ib=True
+                            enable_mellanox_ib=False
                         fi
 
                         if [ ${node} == 'qdfohpc' ]; then
@@ -117,15 +141,11 @@
                                 kargs=''
                                 additional_modules='qcom_emac'
                                 enable_opensm=True
-                                enable_ipoib=True
-                                enable_ifup=True
-                                enable_linux_ib=False
-                                enable_mellanox_ib=True
                                 mofed_install_opts="--distro rhel7.5alternate"
                                 enable_socket_direct=True
                         elif [ ${node} == 'x86ohpc' ]; then
-                                mellanox_iso_url=""
-                                mellanox_iso_file=""
+                                mellanox_iso_url="http://content.mellanox.com/ofed/MLNX_OFED-4.5-1.0.1.0/MLNX_OFED_LINUX-4.5-1.0.1.0-rhel7.6-x86_64.iso"
+                                mellanox_iso_file="MLNX_OFED_LINUX-4.5-1.0.1.0-rhel7.6-x86_64.iso"
                                 master_ipoib_internal='ib0'
                                 cnodes_ipoib_internal='ib0'
                                 master_name='x86ohpc'
@@ -136,13 +156,6 @@
                                 compute_prefix='x860'
                                 compute_regex='x860[1-2]'
                                 kargs=''
-                                enable_opensm=False
-                                enable_ipoib=False
-                                enable_ifup=False
-                                enable_linux_ib=False
-                                enable_mellanox_ib=False
-                                mofed_install_opts=""
-                                enable_socket_direct=False
                         elif [ ${node} == 'd05ohpc' ]; then
                                 master_ipoib_internal='ib0'
                                 cnodes_ipoib_internal='ib0'
@@ -154,13 +167,7 @@
                                 compute_prefix='d050'
                                 compute_regex='d050[1-3]'
                                 kargs=' modprobe.blacklist=hibmc_drm'
-                                enable_opensm=False
-                                enable_ipoib=False
-                                enable_ifup=False
-                                enable_linux_ib=False
-                                enable_mellanox_ib=False
-                                mofed_install_opts=""
-                                enable_socket_direct=False
+                                mofed_install_opts="--distro rhel7.5alternate"
                         elif [ ${node} == 'tx2ohpc' ]; then
                                 master_ipoib_internal='ib0'
                                 cnodes_ipoib_internal='ib0'
@@ -172,13 +179,8 @@
                                 compute_prefix='tx20'
                                 compute_regex='tx20[1-2]'
                                 kargs=' console=tty0'
-                                enable_opensm=False
-                                enable_ipoib=False
-                                enable_ifup=False
-                                enable_linux_ib=False
-                                enable_mellanox_ib=False
-                                mofed_install_opts=""
-                                enable_socket_direct=False
+                                mofed_install_opts="--distro rhel7.5alternate"
+                                enable_socket_direct=True
                         fi
 
                         if [ -d ${WORKSPACE}/mr-provisioner-client ]; then
