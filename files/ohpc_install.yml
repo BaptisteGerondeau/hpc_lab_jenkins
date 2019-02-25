@@ -106,26 +106,29 @@
                                 enable_nfs_ohpc=True
                                 enable_nfs_home=True
                                 enable_helloworld=True
-                                enable_socket_direct=False
-                                mofed_install_opts=""
 
                         else
                                 echo 'Stateless not implemented'
                                 exit 1
                         fi
 
+                        # Infiniband Defaults
+                        enable_opensm=False
+                        enable_ipoib=False
+                        enable_ifup=False
+                        enable_linux_ib=False
+                        enable_mellanox_ib=False
+                        enable_socket_direct=False
+                        mofed_install_opts=""
+
                         if [ ${ib_install} == 'mofed' ]; then
-                            enable_opensm=False
                             enable_ipoib=True
                             enable_ifup=True
-                            enable_linux_ib=False
                             enable_mellanox_ib=True
                         elif [ ${ib_install} == 'foss' ]; then
-                            enable_opensm=False
                             enable_ipoib=True
                             enable_ifup=True
                             enable_linux_ib=True
-                            enable_mellanox_ib=False
                         fi
 
                         if [ ${node} == 'qdfohpc' ]; then
