@@ -60,46 +60,46 @@
                         if [ ${machine_type} == "qdf" ]; then
                                 machine_subarch=GrubWithOptionEfiboot
                                 machine_name="qdfohpc,qdf01,qdf02,qdf03"
-                                preseed_type="kickstart"
-                                kernel_desc="CentOS 7.5"
-                                initrd_desc="CentOS 7.5"
-                                preseed_name="CentOS.Upstream"
-                                stagetwo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
-                                repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
+                                preseed_type="preseed"
+                                kernel_desc="Debian ERP 18.06"
+                                initrd_desc="Debian ERP 18.06 w/QED&BNX2X"
+                                preseed_name="Debian.sid.arm64"
+                                stagetwo=""
+                                repo=""
                                 qdf="earlycon console=ttyAMA0,115200"
                                 special=(${qdf} ${qdf} ${qdf} ${qdf})
                         elif [ ${machine_type} == "tx2" ]; then
                                 machine_subarch=GrubWithOptionEfiboot
                                 machine_name="tx2ohpc,tx201,tx202"
-                                preseed_type="kickstart"
-                                kernel_desc="CentOS 7.5"
-                                initrd_desc="CentOS 7.5"
-                                preseed_name="CentOS.Upstream"
-                                stagetwo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
-                                repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
+                                preseed_type="preseed"
+                                kernel_desc="Debian ERP 18.06"
+                                initrd_desc="Debian ERP 18.06 w/QED&BNX2X"
+                                preseed_name="Debian.sid.arm64"
+                                stagetwo=""
+                                repo=""
                                 tx2="earlycon console=tty0"
                                 special=(${tx2} ${tx2} ${tx2})
                         elif [ ${machine_type} == "x86" ]; then
                                 machine_arch=Intel
                                 machine_subarch=pxelinux
                                 machine_name="x86ohpc,x8601,x8602"
-                                preseed_type="kickstart"
-                                kernel_desc="CentOS 7.6 AMD64"
-                                initrd_desc="CentOS 7.6 AMD64"
-                                preseed_name="CentOS.Upstream.amd64"
-                                stagetwo="http://10.40.0.13/mirror.centos.org/centos/7/os/x86_64/"
-                                repo="http://10.40.0.13/mirror.centos.org/centos/7/os/x86_64/"
-                                x86="console=ttyS1"
+                                preseed_type="preseed"
+                                kernel_desc="Debian Stretch AMD64"
+                                initrd_desc="Debian Stretch AMD64"
+                                preseed_name="Debian.sid.amd64"
+                                stagetwo=""
+                                repo=""
+                                x86="earlycon console=ttyS1"
                                 special=(${x86} ${x86} ${x86})
                         elif [ ${machine_type} == "d05" ]; then
                                 machine_subarch=GrubWithOptionEfiboot
                                 machine_name="d05ohpc,d0501,d0502,d0503"
-                                preseed_type="kickstart"
-                                kernel_desc="CentOS 7.5"
-                                initrd_desc="CentOS 7.5"
-                                preseed_name="CentOS.Upstream"
-                                stagetwo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
-                                repo="http://10.40.0.13/mirror.centos.org/altarch/7/os/aarch64/"
+                                preseed_type="preseed"
+                                kernel_desc="Debian ERP 18.06"
+                                initrd_desc="Debian ERP 18.06 w/QED&BNX2X"
+                                preseed_name="Debian.sid.arm64"
+                                stagetwo=""
+                                repo=""
                                 d05="modprobe.blacklist=hibmc_drm earlycon console=ttyAMA0,115200"
                                 special=(${d05} ${d05} ${d05} ${d05})
                         fi
@@ -108,9 +108,9 @@
                         for ((i = 0; i < ${#special[@]}; i++))
                         do
                                 if [ -z "${kernel_opts}" ]; then
-                                        kernel_opts="ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg ${special[i]}"
+                                        kernel_opts="${special[i]}"
                                 else
-                                        kernel_opts="${kernel_opts};ip=dhcp text inst.stage2=${stagetwo} inst.repo=${repo} inst.ks=file:/ks.cfg ${special[i]}"
+                                        kernel_opts="${kernel_opts};${special[i]}"
                                 fi
                         done
 

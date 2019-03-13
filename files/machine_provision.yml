@@ -96,12 +96,12 @@
                           preseed_type="preseed"
                           kernel_desc="Debian ERP 18.06"
                           initrd_desc="Debian ERP 18.06 w/QED&BNX2X"
-                          preseed_name="Debian"
+                          preseed_name="Debian.sid.arm64"
                           kernel_opts=
                           if [ "${machine_arch}" == "Intel" ]; then
                             kernel_desc="Debian Stretch AMD64"
                             initrd_desc="Debian Stretch AMD64"
-                            preseed_name="Debian.amd64"
+                            preseed_name="Debian.sid.amd64"
                             kernel_opts="earlycon"
                           fi
                         elif [ "${os_type}" == "centos" ]; then
@@ -136,6 +136,7 @@
 
                         # Special cases
                         if [ "${machine_type}" == "d03" ]; then
+                            preseed_name="Debian.sid.ERP"
                             kernel_opts="${kernel_opts} modprobe.blacklist=hibmc_drm earlycon console=ttyS0,115200"
                         elif [ "${machine_type}" == "tx2" ]; then
                             kernel_opts="${kernel_opts} earlycon console=tty0"
