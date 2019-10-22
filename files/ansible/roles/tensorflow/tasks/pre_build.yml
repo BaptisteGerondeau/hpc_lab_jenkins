@@ -71,5 +71,3 @@
           - "{{ dir_home }}"
           - "{{ dir_repo }}"
           - "{{ dir_built }}"
-
-
