@@ -1,0 +1,2 @@
+#!/bin/bash
+bazel build --config=opt {% for tf_cxxopt in tensorflow.cxx_optimizations %} --cxxopt={{ tf_cxxopt | quote }} {% endfor %} {% for tf_copt in tensorflow.c_optimizations %} --copt={{ tf_copt | quote }} {% endfor %} --verbose_failures tensorflow/tools/pip_package:build_pip_package

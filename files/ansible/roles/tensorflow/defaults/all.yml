@@ -23,20 +23,27 @@ numpy:
        wheel: "{{ dir_output }}/numpy-1.17.3-py3.6-linux-aarch64.egg"
        patching_required: true
        patch: 'numpy_centos7_aarch64.patch'
-       built_tarball: "{{ dir_built }}
+       built_tarball: "numpy_{{ version }}_{{ build_id }}"
 
 # TensorFlow variables
 tensorflow:
        name: "tensorflow"
        version: "1.15.0-rc2"
-       release_url: "https://github.com/tensorflow/tensorflow/archive/v1.15.0-rc2.zip"
-       release_zip: "v1.15.0-rc2.zip"
+       release_url: "https://github.com/tensorflow/tensorflow/archive/v1.15.0.zip"
+       release_zip: "v1.15.0.zip"
        dir_base: "{{ dir_home }}/{{ name }}"
        dir_src: "{{ dir_base }}/{{ version }}"
        dir_output: "/tmp/tensorflow_pkg"
-       wheel: "{{ dir_output }}/tensorflow-1.15.0rc2-cp36-cp36m-linux_aarch64.whl"
+       wheel: "{{ dir_output }}/tensorflow-1.15.0-cp36-cp36m-linux_aarch64.whl"
        patching_required: true
        patch: 'patch_bazelbuild.patch'
+       built_tarball: "tensorflow_{{ version }}_{{ build_id }}"
+       cxx_optimizations:
+               - "-D_GLIBCXX_USE_CXX11_ABI=0"
+       c_optimizations:
+               - "-funsafe-math-optimizations"
+               - "-ftree-vectorize"
+               - "-fomit-frame-pointer"
 
 # Bazel variables
 bazel:
@@ -49,6 +56,7 @@ bazel:
        dir_output: "{{ dir_src }}/output"
        binary: "{{ dir_output }}/bazel"
        patching_required: false
+       built_tarball: "bazel_{{ version }}_{{ build_id }}"
 
 
 ohpc_toolchain_lib_dir: "/opt/ohpc/pub/compiler/gcc/8.3.0/lib64"
