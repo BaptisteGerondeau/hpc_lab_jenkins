@@ -1,4 +1,11 @@
 ---
+- name: Make sure setuptools is upgraded
+  pip:
+          name: setuptools
+          executable: pip3
+          extra_args: '--user'
+          state: latest
+
 - name: Install python3 dependencies in venv
   pip:
           name: "{{ tf_build_py3_dependencies }}"

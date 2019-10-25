@@ -1,7 +1,7 @@
 #!/bin/bash
 
-  export PYTHON_BIN_PATH=$(which python3)
-  export PYTHON_LIB_PATH="/home/build/.local/lib/python3.6/site-packages/"
+  export PYTHON_BIN_PATH="{{ venv_path }}/bin/python3"
+  export PYTHON_LIB_PATH="{{ venv_path }}/lib/python3.6/site-packages/"
 
   export TF_NEED_GCP=0
   export TF_NEED_CUDA=0
@@ -27,9 +27,9 @@
   export TF_DOWNLOAD_CLANG=0
 
   # when using NCCL you need to install it own your own
-  export GCC_HOST_COMPILER_PATH="/opt/ohpc/pub/compiler/gcc/8.3.0/bin/gcc"
+  export GCC_HOST_COMPILER_PATH="{{ ohpc_toolchain_base_dir }}/bin/gcc"
   export HOST_C_COMPILER=$GCC_HOST_COMPILER_PATH
-  export PREFIX="/opt/ohpc/pub/compiler/gcc/8.3.0/"
+  export PREFIX="{{ ohpc_toolchain_base_dir }}"
   export CC_OPT_FLAGS="-march=native"
 
-{{ python3 }} {{ tensorflow.dir_src }}/configure.py
+source {{ venv_path }}/bin/activate && {{ tensorflow_configure }}

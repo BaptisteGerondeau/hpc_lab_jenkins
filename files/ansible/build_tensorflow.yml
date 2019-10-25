@@ -1,4 +1,4 @@
 ---
-- hosts: target-py3
+- hosts: target
   roles:
           - tensorflow

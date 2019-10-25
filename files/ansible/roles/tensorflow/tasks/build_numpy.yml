@@ -1,5 +1,5 @@
 ---
-- name: Create build dirs: numpy
+- name: Create build dirs numpy
   file:
           path: "{{ item }}"       
           state: directory
@@ -8,8 +8,8 @@
           group: "{{ user }}"
   with_items:
           - "{{ numpy.dir_base }}"
-          - "{{ numpy.dir_src }}"
-          - "{{ numpy.dir_output }}"
+          - "{{ numpy_dir_src }}"
+          - "{{ numpy_dir_output }}"
 
 - name: Fetch numpy release tarball
   get_url:
@@ -20,7 +20,8 @@
 - name: Unzip the release
   unarchive:
           src: "{{ numpy.dir_base }}/{{ numpy.release_zip }}"
-          dest: "{{ numpy.dir_src }}"
+          remote_src: yes
+          dest: "{{ numpy_dir_src }}"
 
 - name: Make sure numpy hooks up to environment
   template:
@@ -30,20 +31,20 @@
 - name: Get patch workaround for CentOS7 glibc (?) bug
   template:
           src: "{{ numpy.patch }}.j2"
-          dest: "{{ numpy.dir_src }}/{{ numpy.patch }}"
+          dest: "{{ numpy_dir_src }}/{{ numpy.patch }}"
   when: "{{ numpy.patching_required }}"
 
 - name: Apply patch
-  shell: "patch -p0 -i {{ numpy.dir_src }}/{{ numpy.patch }}"
+  shell: "patch -p0 -i {{ numpy_dir_src }}/{{ numpy.patch }}"
   args:
-          chdir: "{{ numpy.dir_src }}"
+          chdir: "{{ numpy_dir_src }}/numpy-{{ numpy_version }}"
           executable: "/bin/bash"
   when: "{{ numpy.patching_required }}"
   
 - name: Build numpy
-  shell: "{{ python3 }} {{ numpy.dir_src }}/setup.py build bdist_wheel"
+  shell: "source {{ venv_path }}/bin/activate && {{ numpy_dir_src }}/setup.py build bdist_wheel"
   args:
-          chdir: "{{ numpy.dir_src }}"
+          chdir: "{{ numpy_dir_src }}/numpy-{{ numpy_version }}"
           executable: "/bin/bash"
   register: numpy_build_log
 - debug: var=numpy_build_log
@@ -57,6 +58,6 @@
 
 - name: Tar-up numpy output
   archive:
-          path: "{{ numpy.dir_output }}"
+          path: "{{ numpy_dir_output }}"
           dest: "{{ dir_built }}/{{ numpy.built_tarball }}"
           format: gz

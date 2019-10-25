@@ -12,7 +12,7 @@
 - name: Enable OpenHPC if not already done
   yum:
           name: "{{ ohpc_release_url }}"
-          when: 'Error: No matching Packages to list' not in is_ohpc_enabled
+  when: "'Error: No matching Packages to list' not in is_ohpc_enabled"
 
 - name: Install OpenHPC dependencies
   yum:
