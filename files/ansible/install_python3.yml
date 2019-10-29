@@ -13,6 +13,7 @@
                             - python36-devel
                             - python-devel
                             - python36-setuptools
+                            - python3-pip
                             - python-setuptools
                             - python36-cffi
                             - libyaml

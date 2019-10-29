@@ -4,7 +4,7 @@
           path: "{{ item }}"       
           state: absent
   with_items:
-          - "{{ bazel.dir_base }}"
+          - "{{ bazel_dir_base }}"
           - "{{ bazel_dir_src }}"
           - "{{ bazel_dir_output }}"
 
@@ -16,18 +16,18 @@
           owner: "{{ user }}"
           group: "{{ user }}"
   with_items:
-          - "{{ bazel.dir_base }}"
+          - "{{ bazel_dir_base }}"
           - "{{ bazel_dir_src }}"
           - "{{ bazel_dir_output }}"
 
 - name: Fetch bazel release tarball
   get_url:
           url: "{{ bazel.release_url }}"
-          dest: "{{ bazel.dir_base }}"
+          dest: "{{ bazel_dir_base }}"
 
 - name: Unzip the release
   unarchive:
-          src: "{{ bazel.dir_base }}/{{ bazel.release_zip }}"
+          src: "{{ bazel_dir_base }}/{{ bazel.release_zip }}"
           remote_src: yes
           dest: "{{ bazel_dir_src }}"
 
